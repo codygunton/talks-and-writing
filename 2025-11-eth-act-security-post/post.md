@@ -179,7 +179,7 @@ Mitigations: Similar to circuit correctness. It is a good idea to write many fai
 
 
 ### Potential Issue: Protocol Bug in whitepaper
-Bugs are found in even the most well-known papers years after release (see for instance this [famous bug in ZCash](https://eprint.iacr.org/2019/119)). 
+Bugs, including the famous ZCash (see p.25 of [BCTV](https://eprint.iacr.org/2013/879.pdf)), are found even in well-studied papers written by the world's foremost experts on zk proving years after publication. For newer and less known protocols, the probability of a bug is likely even higher. 
 
 Level of concern: Medium
 

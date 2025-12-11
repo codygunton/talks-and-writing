@@ -1,15 +1,21 @@
 DRAFT DRAFT DRAFT
+
 TODO: need to expand EEST tests (provide link from Kev)
+
 I will ofc spell check and polish before publishing.
+
+Pictures
+
+Number the potential issues
 
 [toc]
 
 # Introduction
-In the story of Ethereum's growth, there exists a central tension between decentralization and scaling. A proposed change to the protocol invites new entities, Provers, to execute the EVM inside of cryptographic VMs, producing proofs to be checked by nodes. These proofs are tiny in comparison the transactions they prove, and validators do not need to receive all of the state updates, so the networking requirements placed on a nodes remain low. Moreover, the work of checking a proof is tiny in comparison to the work of re-executing all of the transactions in a block, so validators can continue to run on modest hardware. **
+In the story of Ethereum's growth, there exists a central tension between decentralization and scaling. A proposed change to the protocol invites new entities, Provers, to execute the EVM inside of cryptographic VMs, producing proofs to be checked by nodes. These proofs are tiny when compared with the transactions they prove, and validators do not need to receive all of the state updates, so the networking requirements placed on a nodes remain low. Moreover, the work of checking a proof is tiny in comparison to the work of re-executing all of the transactions in a block, so validators can continue to run on modest hardware. **
 
-The present article gives an overview of the security considerations of this upgrade, emphasizing the security of zkVMs and they software they execute.
+The present article gives an overview of the security considerations of this upgrade, emphasizing the security of zkVMs and the software they execute.
 
-## Teminology
+## Terminology
 
 We use the following terms and abbreviations:
  - EL: The Execution Layer in an Ethereum [node](https://ethereum.org/developers/docs/nodes-and-clients/). EL clients are responsible for checking validity of blocks, among other responsiblities.
@@ -18,7 +24,8 @@ We use the following terms and abbreviations:
 - zkVM: A program that implements a virtual machine and can provide cryptographic attestations ("proofs") to the correct execution of code runnable by that machine.
 - Guest Program: The compilation of a computer program to be executed by a zkVM.
 - zkEVM: A program that can provide cryptographic attestations to the correct execution of EVM programs. zkEVMs are almost always build by choosing a zkVM setting the guest program to be an implementation of the STF $\Upsilon$. The claim that a state transition $s_{\text{out}} = \Upsilon(s_{\text{in}})$ is valid is equivalent, for all practical purposes, to the claim that a zkEVM proof constructed with inputs $(s_{\text{in}}, s_{\text{out}})$ is valid.
-- ISA: The low-level language to which a computer program is ultimately translated before being executed by hardware or software. Examples include x86-64, ARM, RISC-V, MIPS, WASM. 
+- ISA (Instruction Set Architecture): A formal description of the instructions a computer supports. Examples are various flavors of x86-64, ARM, RISC-V, MIPS. WASM is another example.
+- Circuit: In the context of the zkVMs, this is where the rules for the VM are written down. This is generally thought of as the most complex part of the system, and the most sensitive 
  
 ## Overview of changes
 At present, to check block validity, nodes execute an implementation of the STF. After the changes, nodes will optimistically await proofs of STF Execution.
@@ -28,18 +35,18 @@ Before zkEVMs:
  - CL requests validation of a block
  - EL re-executes every transaction in the block.
 
-With zkEVMS:
+With zkEVMs:
  - STF is compiled to ISA of zkVM, say, rv32im augmented with special instructions to handle precompiles and syscalls.
  - Provers, entities distinct from Ethereum nodes, construct execution proofs for Ethereum blocks, and broadcast those proofs.
  - CL waits for proofs to arrive
- - CL verifies those proofs
- - (EL still responsible for syncing, state mangement, and more.)
+ - CL now verifies those proofs
+ - (Stateful ELs are still responsible for syncing, state mangement, and more.)
 
 ## A word on diversity via a "multiproofs strategy"
 Diversity among implementations of zkEVMs will be a critical component of security. This diversity should be diversity of both of zkVM provers and of STF implementations. If CL clients do not accept a block until several different zkEVM proofs have been verified, covering diversity of both EL implementations and zkVMs, then security is much greater than it would be with a single proof. We refer to this strategy as a "multiproofs" strategy. (⛔TODO⛔: reference?)
 
 ## A word on formal verification
-The [zkEVM Formal Verification Project](https://verified-zkevm.org/) has an goal to formally verify some components of zkEVMs. These include verifying that certain zkSNARK protocols are secure, and verifying adherence of virtual machine implementations to formal specifications of those machines (EVM and RISC-V). These techniques are powerful but can be slow to develop, and we do not believe that formal verification should be a blocker for scaling L1 with zkEVMs. We mention some places where formal verification can significantly strengthen protocol security, but for the most part we focus on other techniques.
+The [zkEVM Formal Verification Project](https://verified-zkevm.org/) has an goal to formally verify some components of zkEVMs. These include verifying that certain [zkSNARK protocols](https://en.wikipedia.org/wiki/Non-interactive_zero-knowledge_proof) are secure, and verifying adherence of virtual machine implementations to formal specifications of those machines (EVM and RISC-V). These techniques are powerful but can be slow to develop, and we do not believe that formal verification should be a blocker for scaling L1 with zkEVMs. We mention some places where formal verification can significantly strengthen protocol security, but for the most part we focus on other techniques.
 
 ## A word on "zk"
 It is important to acknowledge regularly that we often use the term "zk" (zkVM, zk proving, etc.) for systems that merely provide SNARK proofs. These are good enough for scaling, but the reader should know that these proofs do not provide guarantees of privacy, which would come at the cost of both additional complexity and additional prover work.
@@ -48,13 +55,13 @@ It is important to acknowledge regularly that we often use the term "zk" (zkVM, 
 For the remainder of the article, we will zoom in on several aspects of security of the system and how they change with zkEVMs. To each we attribute a subjective measure "level of concern" which is the author's opinion, roughly, of the potential for a serious exploit due to this factor. Opinions, of course, vary a lot, and the opinions here do not necessarily reflect those of the people who have reviewed the article 😊.
 
 ## Security Component: The Network Composition
-Changing the protocol to depend on a new class of unspecified actors, provers, raises questions about decentralization and incentive alignment, especially since the infrastructure of doing at-home proving would, in a typical case, cost 10s of thousands of dollars and would require electrical upgrades (at least as things stand in 2025). We don't take up this important topic here. As a useful starting point, we recommend the [ZKEVM Book](https://zkevm.fyi/trees/external/incentives.html).
+Changing the protocol to depend on a new class of unspecified actors, provers, raises questions about decentralization and incentive alignment, especially since the infrastructure of doing at-home proving would, in a typical case, cost 10s of thousands of dollars and would require electrical upgrades (at least as things stand in 2025). We don't address this important topic here. As a useful starting point, we recommend the [ZKEVM Book](https://zkevm.fyi/trees/external/incentives.html).
 
 ## Security Component: Diversity
 ### Potential Issue: EL client diversity worsens 
-Currently, https://clientdiversity.org/ shows that there are three clients with with over 10% market share, and five with over 1% market share.  If only one or two clients are competitive (on a speed and cost basis) in a world with zkEVMs, then client diversity has become worse. It should be noted that new clients not included in the above list, such as [Ethrex](https://github.com/lambdaclass/ethrex), may gain traction due to their amenability to zk proving (as we will see saw, Rust has favorable tradeoffs in this regard). While replacing a pool of battle-tested clients with less tested clients would be a loss of security, it is of course possible that new clients could improve diversity metrics in the long run.
+Currently, https://clientdiversity.org/ shows that there are three clients with with over 10% market share, and five with over 1% market share.  If only one or two clients are competitive (on a speed and cost basis) in a world with zkEVMs, then client diversity has become worse. It should be noted that new clients not included in the above list, such as [Ethrex](https://github.com/lambdaclass/ethrex), may gain traction due to their amenability to zk proving (as we will see s Rust has favorable tradeoffs in this regard). While replacing a pool of battle-tested clients with less tested clients would be a loss of security, it is of course possible that new clients could improve diversity metrics in the long run.
 
-**Level of concern:** Medium--this is a serious potential problem, but EL client teams will continue to deliver for Ethereum
+**Level of concern:** Medium--this is a serious potential problem, but we have a solid core of EL developers who want to see their work in production.
 
 **Mitigations:** Diversity can be enforced at the level of the multiproof strategy (LINK). This requires that RTP produces timely proofs for multiple different STFs, which makes scaling more difficult but more secure. 
 
@@ -62,7 +69,7 @@ Currently, https://clientdiversity.org/ shows that there are three clients with 
 ### Potential Issue: Poor zkVMs diversity
 Just as we strive to have diversity of STF implementations, so too do we with to have a diversity of zkVMs. In fact, we also should aim to have diversity of dependencies of all of these pieces of software, notably, it would be risky if the only zkVMs in use all relied on a single SNARK library for constructing proofs.
 
-**Level of concern:** Medium--as in the EL client diversity case, there is a great diversity of teams willing to execute on delivering secure L1 scaling.
+**Level of concern:** Medium. There is a great diversity of teams aiming to deliver secure Ethereum L1 scaling, with more projects expected to come out of stealth mode over the coming year. Moreover, those teams see opportunities outside of Ethereum, such as in provable AI inference. Altogether we are confident that there will be a robust zkVM ecosystem.
 
 **Mitigations:** Again, the multiproof stategy is key. Validators should only accept blocks after having verified several proofs covering a range of zkVM+STF combinations. Moreover, analysis of shared points of failure, including at least the SNARK libraries and other cryptography primitives used to build zkVMs, should be tracked and risk should be spread out if any critical single point of failure is found.
 
@@ -79,52 +86,51 @@ EL clients have been running in production for years, successfully supporting bi
 ### Potential Issue: Risk due to change of guest execution environment of battle-tested EL clients
 For an expanded treatment of these concerns, see (⛔TODO⛔: Link to Kev's blog post)
 
-Existing EL clients were designed to run on traditional CPUs inside of of the most common operating systems. In this setting, the compiler is free to emit any of a large number of instructions and syscalls. As they exist now, zkVMs are dramatically more constrained. This presents difficulties for compiling some languages for execution in zkVMs.
+Existing EL clients were designed to run on traditional CPUs inside of of the most common operating systems. In this setting, the compiler is free to emit any of a large number of instructions and syscalls. As they exist now, zkVMs are dramatically more constrained, i.e., they support only a subset of the instructions and syscalls present in a typical program. This presents difficulties for compiling some languages for execution in zkVMs.
 
-Of the EL clients listed [here](https://ethereum.org/developers/docs/nodes-and-clients/), only Reth is written in a language, Rust, for which there is official support for compilation to a minimal target ISA supported by several zkVMs, the RISC-V ISA called [RV32IM](https://doc.rust-lang.org/rustc/platform-support/riscv32-unknown-none-elf.html). For the clients written in Go, there is support for compilation to MIPS which can be proven by [Ziren](https://github.com/ProjectZKM/Ziren), and there is also support for the RISC-V [rva20u64 profile](https://docs.riscv.org/reference/profiles/rva20-rvi20-rva22/_attachments/RISC-V_Profiles.pdf), which uses a rather complex set of extensions, much larger than RV32IM. It is likely that only a subset of these instructions need to be supported for a given guest program, but there is no guarantee that this subset will be stable under upgrades to dependencies or the compiler. For clients in other languages, similar considerations arise.
+Of the EL clients listed [here](https://ethereum.org/developers/docs/nodes-and-clients/), only Reth is written in a language, Rust, for which there is official support for compilation to a minimal target ISA supported by several zkVMs, the RISC-V ISA called [RV32IM](https://doc.rust-lang.org/rustc/platform-support/riscv32-unknown-none-elf.html). For the clients written in Go, there is support for compilation to MIPS which can be proven by [Ziren](https://github.com/ProjectZKM/Ziren), and there is also support for the RISC-V [rva20u64 profile](https://docs.riscv.org/reference/profiles/rva20-rvi20-rva22/_attachments/RISC-V_Profiles.pdf), which uses a rather complex set of extensions, much larger than RV32IM. It is likely that only a subset of these instructions need to be supported for a given guest program, but there is no guarantee that this subset will be stable under upgrades to dependencies or the compiler. For clients in other managed languages, similar considerations arise.
 
 In recent months, support for additional ISAs has grown, with Jolt upgrading to RV64IMAC and Zisk upgrading to mildly non-compliant subset of RV64IMAFDCZicsr. Widespread support for, say, rva20u64, feels far off.
 
-In a similar vein, there is the question of support for Linux syscalls in guest programs. At the 2025 Berlin Forschungsingenieurstagung, there was loose consensus among the zkVM teams present to standardize around Linux syscalls to, for instance, allocate memory, but no formal description of this commitment has been written down yet. Note that [there are many Linux syscalls](https://man7.org/linux/man-pages/man2/syscalls.2.html), and note also that many zkVM projects implement a custom notion of syscall (see, for instance, [SP1](https://github.com/succinctlabs/sp1/tree/dev/crates/zkvm/entrypoint/src/syscalls) and [OpenVM](https://github.com/openvm-org/openvm/blob/main/docs/vocs/docs/pages/specs/reference/riscv-custom-code.mdx)).
+In a similar vein, there is the question of support for Linux syscalls in guest programs. At a recent client interop event, there was loose consensus among the zkVM teams present to standardize around Linux syscalls to, for instance, allocate guest memory, but no formal description of this commitment has been written down. Note that [there are many Linux syscalls](https://man7.org/linux/man-pages/man2/syscalls.2.html), but only some of these would need to be supported.
 
-It has been [proposed](https://github.com/eth-act/zkvm-standards/pull/7) to standardize around the rv64im-unknown-none-elf target, preferring to move complexity out of ZKVMs.
+It has been [proposed](https://github.com/eth-act/zkvm-standards/pull/7) to standardize around the rv64im-unknown-none-elf target as a minimal baseline. The Geth team rejected this proposal, arguing that additional extensions should be supported by zkVMs to enable proving Go and other managed languages. Research on this is currently being conducted.
 
 **Level of concern:** High. Supporting large targets in zkVMs requires some combination of 
 1) added complexity to the core zkVM circuit; 
 2) software emulation in a simpler ISA;
 3) and program design + validation to compile to a strict subset of the available mandatory set.
 
-Regarding these points:
-1) Point 1 is arguably the worst approach, since writing custom circuits is quite bug prone, due both to the complexity of the task itself and the fragmentation and immaturity of low-level circuit writing frameworks. Therefore it is generally believed to be better to lean on Point 2.
-2) Point 2 is viable as long as the prevalence of the more exotic instructions is low, since emulation overhead is typically (think 500$\times$). Note that Point 2 requires the ability to compile to a simpler target, so the software emulators would likely be written in C, C++, Rust or Zig.
-3) The approach in Point 3 is brittle, but it is not clear that breakages would be common in practice. This approach has the benefit of keeping the scope of the problem of compilation to provable target limited to the tools that EL clients already use, with the addition of an additional "de facto target ISA validation framework". This may make it easier for the EL client teams to respond to security incidents.
+**Mitigations:** The balancing act between different aspects of security is a core concern of the zkEVM project. We address this in terms of the points above. 
+
+1) It is commonly argued that Point 1 is the worst approach, since writing custom circuits is quite bug prone, due both to the complexity of the task itself and the fragmentation and immaturity of low-level circuit writing frameworks. That said, the core zkVM circuit should not change much, and formal verification might give us confidence to build more complex machines.
+2) Point 2 is viable as long as the prevalence of the more exotic instructions is low, since emulation overhead is typically very large (think 500$\times$). Note that Point 2 requires the ability to compile to a simpler target, so the software emulators would likely be written in C, C++, Rust or Zig.
+3) The approach in Point 3 is brittle, but reliability-focused engineering and CI can go a long way. Breakages would be easy to detect (e.g., dumping to binary to look for new instructions and syscalls), and there is no evidence that breakages would be common in practice. Minimizing external dependencies in the STF code is reportedly easy. Teams can use testing to ensure that they can revert to an earlier compiler version for fast incident response. The approach of Point 3 has the benefit of allowing EL client teams to continue to use familiar tools, with the addition of an additional "de facto target ISA validation framework". This may make it easier for the EL client teams to respond to security incidents.
 
 The same considerations apply with regard to the question of partial support for Linux syscalls.
 
-**Mitigations:** The balancing act between different aspects of security is a core concern of the zkEVM project. We address this in terms of the points above. The sweet spot seems to be to handle uncommon instructions through software emulation. Several emulators should be written from scratch and thorougly tested. Validation of defactor target ISAs as in Point 3 should be done in a standalone manner, not simply by verifying that one or more zkVMs can generate proofs for the binary, since the zkVMs may, for instance, silently NOP the unsupported operations, or perhaps a panic could be missed (e.g., due to error handling across an FFI boundary). 
 
 ### Potential Issue: Lack of tests for uncommon compilation targets supported by zkVMs
-Rust defines [tiers of targets](https://doc.rust-lang.org/nightly/rustc/platform-support.html) to describe the level of testing the that will be done for that target before a compiler release is made. In brief:
+Rust defines [tiers of targets](https://doc.rust-lang.org/nightly/rustc/platform-support.html) to describe the level of testing that will be done for that target before a compiler release is made. In brief:
  - Tier 1 *"Guaranteed to work"*: Programs are built for that target before a release, and those programs are tested. Support for the standard library is guaranteed.
  - Tier 2 *"Guaranteed to build"*: Programs are built for that target before a release, but the programs may not be tested. Standard library support may be incomplete unless the tiering is "with host tools", in which case standard library support is guaranteed.
  - Tier 3: Programs are not built for that target before a release.
 
 Rust support for [RV32IM is only Tier 2](https://doc.rust-lang.org/rustc/platform-support/riscv32-unknown-none-elf.html), while [RV64GC is Tier 2 "with host tools"](https://doc.rust-lang.org/rustc/platform-support/riscv64gc-unknown-linux-gnu.html). (but this target emits Linux syscalls). An example CI run of Rust tests against a RISC-V 64-bit target is [here](https://github.com/rust-lang/rust/actions/runs/19116334329/job/54626328406).
 
-Go, by contrast, seems to do robust testing of RISC-V. For instance, in on [this Go CI dashboard]() we found this [CI failure of a RISC-V target](https://ci.chromium.org/ui/p/golang/builders/ci/gotip-linux-riscv64/b8699006944076070321/overview) where 127 out of 61836 testse fail. Unfortunately, Go offer much less control over the RISC-V code that is emitted, which (at present) can use a rather large set of extensions, Linux syscalls, and does not ofter built-in floating point emulation.
+Go, by contrast, seems to do robust testing of RISC-V. For instance, on [this Go CI dashboard](https://build.golang.org/) we found this [CI failure of a RISC-V target](https://ci.chromium.org/ui/p/golang/builders/ci/gotip-linux-riscv64/b8699006944076070321/overview) where 127 out of 61836 tests fail. Unfortunately, Go offer much less control over the RISC-V code that is emitted, which (at present) can use a rather large set of extensions, Linux syscalls, and does not ofter built-in floating point emulation.
 
 For completeness, we mention that [GCC](https://gcc.gnu.org/gcc-16/criteria.html) does not have higher-tier support for RISC-V, though it does support MIPS. Clang test RISC-V, for instance it seems tun run over 6000 RISC-V specific unit tests [here](https://lab.llvm.org/buildbot/#/builders/87/builds/4010/steps/11/logs/stdio), but as with Go compiler, only large target ISAs are covered. 
 
 [The RISE Project](https://riseproject.dev/) project is pursuing improvements compiler testing and support for RISC-V targets. We refer to their blog for information on support for [Rust](https://riseproject.dev/2025/04/15/project-rp004-support-for-a-64-bit-risc-v-linux-port-of-rust-to-tier-1/) and [Go](https://riseproject.dev/2025/04/04/advancing-go-on-risc-v-progress-through-the-rise-project/).
 
-Links to some blog posts on their work are provided in  
-
-**Level of concern:** High; compilers are highly complicated black boxes in this project, any poor testing of these means that zkVMs can produce binaries that do not share the semantics of the STF under all inputs. It is obvious that bugs can be catastrophic; for a particular example see this [blog post of Certora](https://www.certora.com/blog/llvm-bug), which is mentioned in this useful [overview](https://argument.xyz/blog/riscv-good-bad/) by Argument. 
+**Level of concern:** High; compilers are highly complicated black boxes in this project, any poor testing of these means that zkVMs can produce binaries that do not share the semantics of the STF under all inputs. This could clearly be very bad, since then attestors would not actually verify proofs of Ethereum state transitions, rather, they would verify proofs of some related but slightly different state transition. For a particular example see this [blog post of Certora](https://www.certora.com/blog/llvm-bug), which is mentioned in this useful [overview](https://argument.xyz/blog/riscv-good-bad/) by Argument. 
 
 **Mitigations:** 
  - CL clients should impose diversity of guest program compilers in their multiproof settings.
  - Fuzz (compiled) guest programs.
- - Advocate, and possibly implement, high-bar testing of compilation to a "bare metal" target.
+ - Implement zkVMs with better-supported architectures, such at RV64GC or RVA20U64.
+ - Advocate, and possibly implement, high-bar testing of compilation to a "bare metal" targets, i.e. the small targets such at RV32IM supported by zkVMs today.
 
 ### Potential Issue: Use of custom ISAs 
 Projects such as Valida introduce bespoke ISAs that are designed for efficient proving. This means the use of compilers that do not benefit from the extensive testing and scrutiny that the most well-known compilers receive. 
@@ -153,7 +159,7 @@ Each zkVMs implements a custom VM emulator to execute a given program. If the em
 **Mitigations:** Thorough test suites exist to test compliance of of RISC-V emulators. These are being run the zkEVM Team's [zkEVM Test Monitor](https://eth-act.github.io/zkevm-test-monitor/). Compliance testing for additional ISAs should be run nightly and tracked similarly. When ready, formal verification will provide greater assurances of correctness.
 
 ### Potential Issue: Circuit correctness
-At the core of every zkVM library is the implementation of machine specification using arithmetic circuits. It is required that this machine implements the correct semantics, otherwise demonstrating that it has executed correctly after being fed an STF and a set of inputs and outputs, does not mean that the state transition was valid in the sense of conformtion to the Ethereum protocol specification.
+At the core of every zkVM library is the implementation of machine specification using arithmetic circuits. It is required that this machine implements the correct semantics, otherwise demonstrating that it has executed correctly after being fed an STF and a set of inputs and outputs, does not mean that the state transition was valid in the sense of conforming to the Ethereum protocol specification.
 
 **Level of concern:** High
 
@@ -167,7 +173,7 @@ The ultimate desired property for of a zkEVM is that it exactly constraints a pr
 **Mitigations:** All of the [EEST](https://eest.ethereum.org/main/) test cases should be proven. Additional zkEVM-focused tests should be added as well (see ⛔TODO⛔). The zkEVM Formal Verification Project will provide correctness guarantees here, when ready.
 
 ### Potential Issue: Transpilation
-The zkVMs transform an input binary to a representation that suitable for proving. In some cases this is quite faithful to the RISC-V itself, while in other cases this introduces another low-level abstraction that a programmer or auditor must understand. In some cases this is done for performance reasons, specifically concerning the emulation of these programs. If the transpilation step has a bug, for instance it silently NOPs a block of instructions, then witness generation for that part of the program is meaningless.
+The zkVMs transform an input binary to a representation that suitable for proving. In some cases this is quite faithful to the RISC-V itself, while in other cases this introduces another low-level abstraction that a programmer or auditor must understand. In some cases this is done for performance reasons, specifically concerning the emulation of these programs. If the transpilation step has a bug, for instance it silently NOPs a block of instructions, then witness generation (see below) for that part of the program is meaningless.
 
 **Level of concern:** Medium
 
@@ -212,7 +218,7 @@ If the implementation of the SNARK protocol does not match a correct specificati
 **Mitigations:** Clarity of code, correct comments in the code, and best of all, explicit linking of sections of code with the spec, means that the spec can be checked. The most extreme and powerful version of this is formal verification. Testing, including failure cases, helps here. 
 
 ### Potential Issue: The protocol offers a low number of bits of security
-The security of any cryptographic protocol depends on computation hardness assumptions. zkVMs rely on a variety of assumptions as well as the correct setting of security parameters. Such parameters can include choices of elliptic curves, lattice parameters, and hash functions. One prominent security parameters is the number of query rounds executed during proving of "proximity proofs", which are the heart of the most widely used polynomial commitment schemes. In such settings, it is known how to set the number of queries securely, (say, to achieve 128 bits of security), but it is [conjectured](https://eprint.iacr.org/2021/582) that around half as man queries would in fact give this level of security (⛔TODO⛔ REF forthcoming blog post of Arantxa). If such conjectures turned out to be incorrect, then the zkEVM using the protocol would in fact be more vulnerable to brute force force attacks than believed, allowing provers to find malicious inputs that could case proofs to be incorrectly accepted.
+The security of any cryptographic protocol depends on computation hardness assumptions. zkVMs rely on a variety of assumptions as well as the correct setting of security parameters. Such parameters can include choices of elliptic curves, lattice parameters, and hash functions. One prominent security parameters is the number of query rounds executed during proving of "proximity proofs", which are the heart of the most widely used polynomial commitment schemes. In such settings, it is known how to set the number of queries securely, (say, to achieve 128 bits of security), but it is [conjectured](https://eprint.iacr.org/2021/582) that around half as man queries would in fact give this level of security (⛔TODO⛔ REF forthcoming blog post of Arantxa). If such conjectures turned out to be incorrect, then the zkEVM using the protocol would in fact be more vulnerable to brute force  attacks than believed, allowing provers to find malicious inputs that could case proofs to be incorrectly accepted.
 
 **Level of concern:** Medium. The goal here is security by deterrance. Potential impact is high, but unless community standards erode significantly or there is a massive gap in the security analysis,  exploitability is low when compared to more mundane attacks on the code. 
 

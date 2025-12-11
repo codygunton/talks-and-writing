@@ -176,7 +176,7 @@ The ultimate desired property for of a zkEVM is that it exactly constraints a pr
 
 **Level of concern:** High, as this is a meta-issue encompassing many others. 
 
-**Mitigations:** All of the [EEST](https://eest.ethereum.org/main/) test cases should be proven. Additional zkEVM-focused tests should be added as well (see ⛔TODO⛔). The zkEVM Formal Verification Project will provide correctness guarantees here, when ready.
+**Mitigations:** All of the [EEST](https://eest.ethereum.org/main/) test cases should be proven, and [not a subset](https://github.com/paradigmxyz/reth/pull/18140) of these. The zkEVM Formal Verification Project will provide correctness guarantees here, when ready.
 
 ### Potential Issue: Transpilation
 The zkVMs transform an input binary to a representation that suitable for proving. In some cases this is quite faithful to the RISC-V itself, while in other cases this introduces another low-level abstraction that a programmer or auditor must understand. In some cases this is done for performance reasons, specifically concerning the emulation of these programs. If the transpilation step has a bug, for instance it silently NOPs a block of instructions, then witness generation (see below) for that part of the program is meaningless.

@@ -8,7 +8,10 @@ Pictures
 
 Number the potential issues
 
+
 [toc]
+
+Acknowledgements: I think Andrés Láinez, Guillaume Ballet and Ladislaus for helpful comments during the preparation of this article.
 
 # Introduction
 In the story of Ethereum's growth, there exists a central tension between decentralization and scaling. A proposed change to the protocol invites new entities, Provers, to execute the EVM inside of cryptographic VMs, producing proofs to be checked by nodes. These proofs are tiny when compared with the transactions they prove, and validators do not need to receive all of the state updates, so the networking requirements placed on a nodes remain low. Moreover, the work of checking a proof is tiny in comparison to the work of re-executing all of the transactions in a block, so validators can continue to run on modest hardware. **
@@ -42,8 +45,13 @@ With zkEVMs:
  - CL now verifies those proofs
  - (Stateful ELs are still responsible for syncing, state mangement, and more.)
 
+<figure style="border: 1px solid #ccc; padding: 10px; display: inline-block;">
+  <img src="assets/pipeline.svg" alt="Pipeline">
+  <figcaption style="font-style: italic; text-align: center; margin-top: 8px; color: #555;">A diagram showing how guest program generation, proving and verification fit together in a complete ZKEVM stack. Dotted arrows represent data being sent or requested across a network. </figcaption>
+</figure>
+
 ## A word on diversity via a "multiproofs strategy"
-Diversity among implementations of zkEVMs will be a critical component of security. This diversity should be diversity of both of zkVM provers and of STF implementations. If CL clients do not accept a block until several different zkEVM proofs have been verified, covering diversity of both EL implementations and zkVMs, then security is much greater than it would be with a single proof. We refer to this strategy as a "multiproofs" strategy. (⛔TODO⛔: reference?)
+Diversity among implementations of zkEVMs will be a critical component of security. This diversity should be diversity of both of zkVM provers and of STF implementations. If CL clients do not accept a block until several different zkEVM proofs have been verified, covering diversity of both EL implementations and zkVMs, then security is much greater than it would be with a single proof. We refer to this strategy as a "multiproofs" strategy. A forthcoming article of Kev Wedderburn will further explore this topic.
 
 ## A word on formal verification
 The [zkEVM Formal Verification Project](https://verified-zkevm.org/) has an goal to formally verify some components of zkEVMs. These include verifying that certain [zkSNARK protocols](https://en.wikipedia.org/wiki/Non-interactive_zero-knowledge_proof) are secure, and verifying adherence of virtual machine implementations to formal specifications of those machines (EVM and RISC-V). These techniques are powerful but can be slow to develop, and we do not believe that formal verification should be a blocker for scaling L1 with zkEVMs. We mention some places where formal verification can significantly strengthen protocol security, but for the most part we focus on other techniques.
@@ -84,8 +92,6 @@ EL clients have been running in production for years, successfully supporting bi
 
 
 ### Potential Issue: Risk due to change of guest execution environment of battle-tested EL clients
-For an expanded treatment of these concerns, see (⛔TODO⛔: Link to Kev's blog post)
-
 Existing EL clients were designed to run on traditional CPUs inside of of the most common operating systems. In this setting, the compiler is free to emit any of a large number of instructions and syscalls. As they exist now, zkVMs are dramatically more constrained, i.e., they support only a subset of the instructions and syscalls present in a typical program. This presents difficulties for compiling some languages for execution in zkVMs.
 
 Of the EL clients listed [here](https://ethereum.org/developers/docs/nodes-and-clients/), only Reth is written in a language, Rust, for which there is official support for compilation to a minimal target ISA supported by several zkVMs, the RISC-V ISA called [RV32IM](https://doc.rust-lang.org/rustc/platform-support/riscv32-unknown-none-elf.html). For the clients written in Go, there is support for compilation to MIPS which can be proven by [Ziren](https://github.com/ProjectZKM/Ziren), and there is also support for the RISC-V [rva20u64 profile](https://docs.riscv.org/reference/profiles/rva20-rvi20-rva22/_attachments/RISC-V_Profiles.pdf), which uses a rather complex set of extensions, much larger than RV32IM. It is likely that only a subset of these instructions need to be supported for a given guest program, but there is no guarantee that this subset will be stable under upgrades to dependencies or the compiler. For clients in other managed languages, similar considerations arise.
@@ -142,11 +148,11 @@ Projects such as Valida introduce bespoke ISAs that are designed for efficient p
 ### Potential Issue: Precompiles for proving 
 Due to the fact that execution in arithmetic circuits has a cost model that is fundamentally different to executing on a traditional binary computer, zkVMs introduce what we call "precompiles" to optimize proving for difficult cases such as Keccak hashing. Traditional EVM precompiles have which have long been (LINK) a target for simplification to improve Ethereum's security. While zkVM precompiels are, in practice, usually related to existing EVM precompiles, they are a distinct notion which, moreover, may be harder to vanquish than traditional precompiles as we pursue L1 Scaling, since this pursuit creates significant pressures to optimize for execution speed and cost. Note that in the case of EVM precompiles, the execution environment is a piece of commodity hardware, whereas in the zkVM case the execution environment is a virtual environment that is much easier to customize. The relative ease with which we can customize the environment tends to increase the attack surface of the composite system.
 
-**Level of concern:** Medium-High; these precompiles tend to be complex. (⛔TODO⛔: link public examples)
+**Level of concern:** Medium-High; these precompiles tend to be complex.
 
 **Mitigations:** Prover incentives more aligned with maintenance and perhaps even proliferation of precompiles. Some things that could help are:
- - Gas schedule changes: Reducing the need for, say, an efficient modexp or Keccak implementation, could reduce the worst-case proving time dramatically, reducing the need for an efficient implementation. This does not mean that zkVM precompiles would be retired, however (⛔TODO⛔: links)
- - EVMMAX: EVMMAX would expose basic modular arithmetic primitives into the assembly language of the EVM that could give a sweet spot in terms of proving. Note that EVMMAX was bundled with EOF, but this was not necessary. (⛔TODO⛔: think this through more and expand or remove).
+ - Gas schedule changes: Reducing the need for, say, an efficient modexp or Keccak implementation, could reduce the worst-case proving time dramatically, reducing the need for an efficient implementation.
+ - Reduce precompile surface area: ZKsync Airbender has [demonstrated](https://github.com/matter-labs/zksync-airbender/tree/main/risc_v_simulator/src/delegations) that making precompiles for 256-bit modular arithmetic, and using that as a building block for functions that might otherwise be separate precompiles, is a viable approach in terms of performance. 
  - Autoprecompiles: Powdr Labs has worked on "autoprecompiles", which hope to give efficient code akin to a precompile via an automated process, rather than a manual, per-operation process. [Reported](https://www.powdr.org/blog/accelerating-ethereum-with-autoprecompiles) performance is promising, but the security implications are unclear to the author.
  - The zkEVM Formal Verification project has a focus on such precompiles. Veridise has already [deployed](https://risczero.com/blog/RISCZero-formally-verified-zkvm) formal verification in this context.
 
@@ -218,7 +224,7 @@ If the implementation of the SNARK protocol does not match a correct specificati
 **Mitigations:** Clarity of code, correct comments in the code, and best of all, explicit linking of sections of code with the spec, means that the spec can be checked. The most extreme and powerful version of this is formal verification. Testing, including failure cases, helps here. 
 
 ### Potential Issue: The protocol offers a low number of bits of security
-The security of any cryptographic protocol depends on computation hardness assumptions. zkVMs rely on a variety of assumptions as well as the correct setting of security parameters. Such parameters can include choices of elliptic curves, lattice parameters, and hash functions. One prominent security parameters is the number of query rounds executed during proving of "proximity proofs", which are the heart of the most widely used polynomial commitment schemes. In such settings, it is known how to set the number of queries securely, (say, to achieve 128 bits of security), but it is [conjectured](https://eprint.iacr.org/2021/582) that around half as man queries would in fact give this level of security (⛔TODO⛔ REF forthcoming blog post of Arantxa). If such conjectures turned out to be incorrect, then the zkEVM using the protocol would in fact be more vulnerable to brute force  attacks than believed, allowing provers to find malicious inputs that could case proofs to be incorrectly accepted.
+The security of any cryptographic protocol depends on computation hardness assumptions. zkVMs rely on a variety of assumptions as well as the correct setting of security parameters. Such parameters can include choices of elliptic curves, lattice parameters, and hash functions. One prominent security parameters is the number of query rounds executed during proving of "proximity proofs", which are the heart of the most widely used polynomial commitment schemes. In such settings, it is known how to set the number of queries securely, (say, to achieve 128 bits of security), but it is [conjectured](https://eprint.iacr.org/2021/582) that around half as man queries would in fact give this level of security. A forthcoming [ethresear.ch](https://ethresear.ch/) post of Arantxa Zapico will detail these issues. If such conjectures turned out to be incorrect, then the zkEVM using the protocol would in fact be more vulnerable to brute force  attacks than believed, allowing provers to find malicious inputs that could case proofs to be incorrectly accepted.
 
 **Level of concern:** Medium. The goal here is security by deterrance. Potential impact is high, but unless community standards erode significantly or there is a massive gap in the security analysis,  exploitability is low when compared to more mundane attacks on the code. 
 

@@ -1,5 +1,7 @@
 Notes before publication.
  - Ladislaus suggested adding some images, and that's what caused me to add the diagram. Happy to have more useful visual added or to produce some myself if you have any thoughts.
+ - I think probably the table of contents should go away, but idk, I defer to you. Could be nice as a sidebar?
+
 
 [toc]
 
@@ -18,7 +20,7 @@ We use the following terms and abbreviations:
 - The STF, $\Upsilon$: The State Transition Function, sometimes denoted by the Greek letter, $\Upsilon$, which describes the legal state transitions of the network.
 - zkVM: A program that implements a virtual machine and can provide cryptographic attestations ("proofs") to the correct execution of code runnable by that machine.
 - Guest Program: The compilation of a computer program to be executed by a zkVM.
-- zkEVM: A program that can provide cryptographic attestations to the correct execution of EVM programs. zkEVMs are almost always build by choosing a zkVM setting the guest program to be an implementation of the STF $\Upsilon$. The claim that a state transition $s_{\text{out}} = \Upsilon(s_{\text{in}})$ is valid is equivalent, for all practical purposes, to the claim that a zkEVM proof constructed with inputs $(s_{\text{in}}, s_{\text{out}})$ is valid.
+- zkEVM: A program that can provide cryptographic attestations to the correct execution of EVM programs. zkEVMs are most commonly built by choosing a zkVM and setting the guest program to be an implementation of the STF $\Upsilon$. The claim that a state transition $s_{\text{out}} = \Upsilon(s_{\text{in}})$ is valid is equivalent, for all practical purposes, to the claim that a zkEVM proof constructed with inputs $(s_{\text{in}}, s_{\text{out}})$ is valid.
 - ISA (Instruction Set Architecture): A formal description of the instructions a computer supports. Examples are various flavors of x86-64, ARM, RISC-V, MIPS. WASM is another example.
 - Circuit: In the context of the zkVMs, this is where the rules for the VM are written down. This is generally thought of as the most complex part of the system, and the most sensitive 
  
@@ -46,7 +48,7 @@ With zkEVMs:
 Diversity among implementations of zkEVMs will be a critical component of security. This diversity should be diversity of both of zkVM provers and of STF implementations. If CL clients do not accept a block until several different zkEVM proofs have been verified, covering diversity of both EL implementations and zkVMs, then security is much greater than it would be with a single proof. We refer to this strategy as a "multiproofs" strategy. A forthcoming article of Kev Wedderburn will further explore this topic.
 
 ## A word on formal verification
-The [zkEVM Formal Verification Project](https://verified-zkevm.org/) has an goal to formally verify some components of zkEVMs. These include verifying that certain [zkSNARK protocols](https://en.wikipedia.org/wiki/Non-interactive_zero-knowledge_proof) are secure, and verifying adherence of virtual machine implementations to formal specifications of those machines (EVM and RISC-V). These techniques are powerful but can be slow to develop, and we do not believe that formal verification should be a blocker for scaling L1 with zkEVMs. We mention some places where formal verification can significantly strengthen protocol security, but for the most part we focus on other techniques.
+The [zkEVM Formal Verification Project](https://verified-zkevm.org/) has an goal to formally verify some components of zkEVMs. The goals include verifying that certain [zkSNARK protocols](https://en.wikipedia.org/wiki/Non-interactive_zero-knowledge_proof) are secure in a theoretical sense, verifying adherence of virtual machine implementations to formal specifications of those machines (EVM and RISC-V). These techniques are powerful but can be slow to develop, and we do not believe that formal verification should be a blocker for scaling L1 with zkEVMs. We mention some places where formal verification can significantly strengthen protocol security, but for the most part we focus on other techniques.
 
 ## A word on "zk"
 It is important to acknowledge regularly that we often use the term "zk" (zkVM, zk proving, etc.) for systems that merely provide SNARK proofs. These are good enough for scaling, but the reader should know that these proofs do not provide guarantees of privacy, which would come at the cost of both additional complexity and additional prover work.
@@ -80,7 +82,7 @@ EL clients have been running in production for years, successfully supporting bi
 
 **Level of concern:** Medium-Low -- the experience of EL client teams, coupled with the extensive [EEST testing framework](https://eest.ethereum.org/main/) gives us confidence to refactor as needed for proving.
 
-**Mitigations:** Teams should take care to avoid unnecessary code changes and to maintain, or even expand, testing. Formal verification against EVM specs could catch such bugs.
+**Mitigations:** Teams should take care to avoid unnecessary code changes and to maintain, or even expand, testing. Formal verification that compiled guest programs match an EVM specification (a work in progress) would increase our confidence when making changes to STF implementations.
 
 
 ### Potential Issue 4: Risk due to change of guest execution environment of battle-tested EL clients
@@ -101,7 +103,7 @@ It has been [proposed](https://github.com/eth-act/zkvm-standards/pull/7) to stan
 
 **Mitigations:** The balancing act between different aspects of security is a core concern of the zkEVM project. We address this in terms of the points above. 
 
-1) It is commonly argued that Point 1 is the worst approach, since writing custom circuits is quite bug prone, due both to the complexity of the task itself and the fragmentation and immaturity of low-level circuit writing frameworks. That said, the core zkVM circuit should not change much, and formal verification might give us confidence to build more complex machines.
+1) It is commonly argued that Point 1 is the worst approach, since writing custom circuits is quite bug prone, due both to the complexity of the task itself and the fragmentation and immaturity of low-level circuit writing frameworks. That said, the core zkVM circuit should not change much, and formal verification of circuits against [Sail](https://github.com/rems-project/sail) specifications might give us confidence to build more complex machines.
 2) Point 2 is viable as long as the prevalence of the more exotic instructions is low, since emulation overhead is typically very large (think 500$\times$). Note that Point 2 requires the ability to compile to a simpler target, so the software emulators would likely be written in C, C++, Rust or Zig.
 3) The approach in Point 3 is brittle, but reliability-focused engineering and CI can go a long way. Breakages would be easy to detect (e.g., dumping to binary to look for new instructions and syscalls), and there is no evidence that breakages would be common in practice. Minimizing external dependencies in the STF code is reportedly easy. Teams can use testing to ensure that they can revert to an earlier compiler version for fast incident response. The approach of Point 3 has the benefit of allowing EL client teams to continue to use familiar tools, with the addition of an additional "de facto target ISA validation framework". This may make it easier for the EL client teams to respond to security incidents.
 
@@ -168,7 +170,7 @@ The ultimate desired property for of a zkEVM is that it exactly constraints a pr
 
 **Level of concern:** High, as this is a meta-issue encompassing many others. 
 
-**Mitigations:** All of the [EEST](https://eest.ethereum.org/main/) test cases should be proven, and [not a subset](https://github.com/paradigmxyz/reth/pull/18140) of these. The zkEVM Formal Verification Project will provide correctness guarantees here, when ready.
+**Mitigations:** All of the [EEST](https://eest.ethereum.org/main/) test cases should be proven, [not just a subset](https://github.com/paradigmxyz/reth/pull/18140) of these. As mentioned before, formal verification will eventually offer strong guarantees up to the point where the proving system consumes a compiles guest program.
 
 ### Potential Issue 11: Transpilation
 The zkVMs transform an input binary to a representation that suitable for proving. In some cases this is quite faithful to the RISC-V itself, while in other cases this introduces another low-level abstraction that a programmer or auditor must understand. In some cases this is done for performance reasons, specifically concerning the emulation of these programs. If the transpilation step has a bug, for instance it silently NOPs a block of instructions, then witness generation (see below) for that part of the program is meaningless.
@@ -220,15 +222,15 @@ The security of any cryptographic protocol depends on computation hardness assum
 
 **Level of concern:** Medium. The goal here is security by deterrance. Potential impact is high, but unless community standards erode significantly or there is a massive gap in the security analysis,  exploitability is low when compared to more mundane attacks on the code. 
 
-**Mitigations:** Audits by cryptographers are essential. Reinforcing those audits with formal verification strengthens our confidence significantly. It would be wise to implement and regularly test fallback systems using parameters that are either proven secure or have a longer track record of use "in the wild". 
+**Mitigations:** Audits by cryptographers are essential. It would be wise to implement and regularly test fallback systems using parameters that are either proven secure or have a longer track record of use "in the wild". 
 
 ## Security Component: The Engineering Stack
 ### Potential Issue 18: zkVMs depend heavily on unsafe code
-It is good for security that the zkVMs are written in safe languages, primarily in Rust, but this is significantly undermined by the use of unsafe Rust. Unsafe code comes in primarily for reasons of performance, either to optimize Rust, or to call out to C++ or CUDA. Bugs tend to spring from complexity, so defaulting to unsafe languages for the most complex, low-level code significantly undermines the value of using a safe language.
+It is good for security that the zkVMs are written in safer languages such as Rust, but this is significantly undermined by the use of unsafe Rust. Unsafe code comes in primarily for reasons of performance, either to optimize Rust, or to call out to C, C++ or CUDA. Bugs tend to spring from complexity, so defaulting to unsafe languages for the most complex, low-level code significantly undermines the value of using a safe language.
 
 **Level of concern:** Medium-High
 
-**Mitigations:** Reduce the amount of unsafe code where possible. Run sanitizers nightly and before any release. Fuzzing for crashes is also helpful here.
+**Mitigations:** Reduce the amount of unsafe code where possible. Run sanitizers regularly and before any release. Fuzzing for crashes is also helpful here.
 
 # Conclusion
 zkEVM's rely on what is often called "moon math". While it is true that these systems represent a cutting edge frontier of cryptography, ensuring the security of these systems will come down to a few simple ideas. One of those ideas is spreading out risk through diversity, with validators verifying not just one proof, but several proofs, with the goal of minimizing the number of shared zkEVM dependencies. Thorough testing is critical. Maintaining and conforming to formal specifications, whether of cryptographic protocols or virtual machines, is necessary in order to reason about the system. Techniques for bug finding, such as auditing and fuzzing, have been successfully deployed for years by many different security firms. Longer term, formal verification of parts of the zkEVMs will give us a higher degree of security, and perhaps even the confidence to grow [faster](https://aws.amazon.com/blogs/security/an-unexpected-discovery-automated-reasoning-often-makes-systems-more-efficient-and-easier-to-maintain/).

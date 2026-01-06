@@ -1,19 +1,9 @@
-Notes before publication.
- - Ladislaus suggested adding some images, and that's what caused me to add the diagram. Happy to have more useful visual added or to produce some myself if you have any thoughts.
- - I think probably the table of contents should go away, but idk, I defer to you. Could be nice as a sidebar?
- Notes from Melissa edit: 
- - See placeholder "add-best-link-here" for spots where additional reader context would be helpful (defer to you on best resource to use) 
- - Note missing links on lines 77 + 158
- - Please spot-check my 'Clang test' edits on line 137 
- - Note: Heavy usage of "we" in a formal academic style, though that's somewhat mitigated by "which is the author's opinion... the opinions here do not necessarily reflect those of the people who have reviewed." Consider that, given where this will be published, "we" will implicitly be interpreted as "the zkVM team / EF." If this is meant to be from your perspective explicitly, I strongly recommend dropping the academic "we" for clarity, shifting to the abstract (e.g., changing 'For the remainder of the article, we will zoom in on several aspects' to 'The remainder of this article zooms in on several aspects.'). Let me know if you would like a second edit pass to move this forward. 
-
-
 [toc]
 
 Acknowledgements: I thank Andrés Láinez, Guillaume Ballet and Ladislaus for helpful comments during the preparation of this article.
 
 # Introduction
-In the story of Ethereum's growth, there exists a central tension between decentralization and scaling. A [proposed change to the protocol](add-best-link-here) invites new entities, Provers, to execute the EVM inside of cryptographic VMs, producing proofs to be checked by attestors. 
+In the story of Ethereum's growth, there exists a central tension between decentralization and scaling. A [proposed change to the protocol](https://vitalik.eth.limo/general/2024/10/23/futures4.html#2) invites new entities, Provers, to execute the EVM inside of cryptographic VMs, producing proofs to be checked by attestors. 
 
 These proofs are tiny when compared with the transactions they prove, and attestors do not need to receive all of the state updates, so the networking requirements placed on attestors remain low. Moreover, the work of checking a proof is tiny in comparison to the work of re-executing all of the transactions in a block, so attestors can run on modest hardware.
 
@@ -52,16 +42,16 @@ With zkEVMs:
 </figure>
 
 ## A word on diversity via a "multiproofs strategy"
-Diversity among implementations of zkEVMs will be a critical component of security. This diversity should be diversity of both of zkVM provers and of STF implementations. If CL clients do not accept a block until several different zkEVM proofs have been verified, covering diversity of both EL implementations and zkVMs, then security is much greater than it would be with a single proof. We refer to this strategy as a "multiproofs" strategy. A forthcoming article by Kev Wedderburn will further explore this topic.
+Diversity among implementations of zkEVMs will be a critical component of security. This diversity should be diversity of both of zkVM provers and of STF implementations. If CL clients do not accept a block until several different zkEVM proofs have been verified, covering diversity of both EL implementations and zkVMs, then security is much greater than it would be with a single proof. Let's call this a "multiproofs" strategy. A forthcoming article by Kev Wedderburn will further explore this topic.
 
 ## A word on formal verification
-The [zkEVM Formal Verification Project](https://verified-zkevm.org/) has a goal to formally verify some components of zkEVMs. The goals include verifying that certain [zkSNARK protocols](https://en.wikipedia.org/wiki/Non-interactive_zero-knowledge_proof) are secure in a theoretical sense, verifying adherence of virtual machine implementations to formal specifications of those machines (EVM and RISC-V). These techniques are powerful, but can be slow to develop, and we do not believe that formal verification should be a blocker for scaling L1 with zkEVMs. We mention some places where formal verification can significantly strengthen protocol security, but for the most part we focus on other techniques.
+The [zkEVM Formal Verification Project](https://verified-zkevm.org/) has a goal to formally verify some components of zkEVMs. The goals include verifying that certain [zkSNARK protocols](https://en.wikipedia.org/wiki/Non-interactive_zero-knowledge_proof) are secure in a theoretical sense, verifying adherence of virtual machine implementations to formal specifications of those machines (EVM and RISC-V). These techniques are powerful, but can be slow to develop, and the author does not believe that formal verification should be a blocker for scaling L1 with zkEVMs.
 
 ## A word on "zk"
-It is important to acknowledge regularly that we often use the term "zk" (zkVM, zk proving, etc.) for systems that merely provide SNARK proofs. These are good enough for scaling, but the reader should know that these proofs do not provide guarantees of privacy, which would come at the cost of both additional complexity and additional prover work.
+The term "zk" is commonly abused to refer to systems that merely provide SNARK proofs (zkVM, zk proving, etc.) without the zero knowledge property. These systems are good enough for scaling, but the reader should know that these proofs do not provide guarantees of privacy, which would come at the cost of both additional complexity and additional prover work. 
 
 # Components of security
-For the remainder of the article, we will zoom in on several aspects of the security of the system and how they change with zkEVMs. To each we attribute a subjective measure, "level of concern," which is the author's opinion, roughly, of the potential for a serious exploit due to this factor. Opinions, of course, vary a lot, and the opinions here do not necessarily reflect those of the people who have reviewed the article 😊.
+For the remainder of the article, we will zoom in on several aspects of the security of the system and how they change with zkEVMs. Each is attributed a subjective measure, "level of concern," which is the author's opinion, roughly, of the potential for a serious exploit due to this factor. Opinions, of course, vary a lot, and the opinions here do not necessarily reflect those of the people who have reviewed the article.
 
 ## Security Component: The Network Composition
 Changing the protocol to depend on a new class of unspecified actors, provers, raises questions about decentralization and incentive alignment, especially since the infrastructure of doing at-home proving would, in a typical case, cost 10s of thousands of dollars, and would require electrical upgrades (at least as things stand in 2025). We don't address this important topic here. As a useful starting point, we recommend the [ZKEVM Book](https://zkevm.fyi/trees/external/incentives.html).
@@ -72,16 +62,16 @@ Changing the protocol to depend on a new class of unspecified actors, provers, r
 Currently, https://clientdiversity.org/ shows that there are three clients with with over 10% market share, and five with over 1% market share.  If only one or two clients are competitive (on a speed and cost basis) in a world with zkEVMs, then client diversity will worsen. It should be noted that new clients not included in the above list, such as [Ethrex](https://github.com/lambdaclass/ethrex), may gain traction due to their amenability to zk proving (as we will see, Rust has favorable tradeoffs in this regard). While replacing a pool of battle-tested clients with less tested clients would be a loss of security, it is of course possible that new clients could improve diversity metrics in the long run.
 
 **Level of concern:** Medium 
-This is a serious potential problem, but we have a solid core of EL developers who want to see their work in production.
+This is a serious potential problem, but there is a solid core of EL developers who want to see their work in production.
 
-**Mitigations:** Diversity can be enforced at the level of the multiproof strategy (LINK). This requires that RTP produces timely proofs for multiple different STFs, which makes scaling more difficult, but more secure. 
+**Mitigations:** Diversity can be enforced at the level of the multiproof strategy. This requires that RTP produces timely proofs for multiple different STFs, which makes scaling more difficult, but more secure. 
 
 
 ### Potential Issue 2: Poor zkVM diversity
 Just as we strive to have diversity of STF implementations, we also strive to have a diversity of zkVMs. In fact, we should also aim to have diversity of dependencies for all of these pieces of software. Notably, it would be risky if the only zkVMs in use all relied on a single SNARK library for constructing proofs.
 
 **Level of concern:** Medium 
-There is a great diversity of teams aiming to deliver secure Ethereum L1 scaling, with more projects expected to come out of stealth mode over the coming year. Moreover, those teams see opportunities outside of Ethereum, such as in provable AI inference. Altogether we are confident that there will be a robust zkVM ecosystem.
+There is a great diversity of teams aiming to deliver secure Ethereum L1 scaling, with more projects expected to come out of stealth mode over the coming year. Moreover, those teams see opportunities outside of Ethereum, such as in provable AI inference. Altogether we should be confident that there will be a robust zkVM ecosystem.
 
 **Mitigations:** Again, the multiproof stategy is key. Validators should only accept blocks after having verified several proofs, covering a range of zkVM+STF combinations. In addition, analysis of shared points of failure, including at least the SNARK libraries and other cryptography primitives used to build zkVMs, should be tracked and risk should be spread out if any critical single point of failure is found.
 
@@ -131,9 +121,9 @@ In brief:
 
 Rust support for [RV32IM is only Tier 2](https://doc.rust-lang.org/rustc/platform-support/riscv32-unknown-none-elf.html), while [RV64GC is Tier 2 "with host tools"](https://doc.rust-lang.org/rustc/platform-support/riscv64gc-unknown-linux-gnu.html) (but this target emits Linux syscalls). An example CI run of Rust tests against a RISC-V 64-bit target is [here](https://github.com/rust-lang/rust/actions/runs/19116334329/job/54626328406).
 
-Go, by contrast, seems to do robust testing of RISC-V. For instance, on [this Go CI dashboard](https://build.golang.org/) we found this [CI failure of a RISC-V target](https://ci.chromium.org/ui/p/golang/builders/ci/gotip-linux-riscv64/b8699006944076070321/overview) where 127 out of 61836 tests fail. Unfortunately, Go offer much less control over the RISC-V code that is emitted, which (at present) can use a rather large set of extensions, Linux syscalls, and does not ofter built-in floating point emulation.
+Go, by contrast, seems to do robust testing of RISC-V. For instance, on [this Go CI dashboard](https://build.golang.org/) one can find this [CI failure of a RISC-V target](https://ci.chromium.org/ui/p/golang/builders/ci/gotip-linux-riscv64/b8699006944076070321/overview) where 127 out of 61836 tests fail. Unfortunately, Go offer much less control over the RISC-V code that is emitted, which (at present) can use a rather large set of extensions, Linux syscalls, and does not ofter built-in floating point emulation.
 
-For completeness, we mention that [GCC](https://gcc.gnu.org/gcc-16/criteria.html) does not have higher-tier support for RISC-V, though it does support MIPS. Clang test RISC-V, for instance, seems to run over 6000 RISC-V specific unit tests [here](https://lab.llvm.org/buildbot/#/builders/87/builds/4010/steps/11/logs/stdio). But, as with Go compiler, only large target ISAs are covered. 
+Regarding C++ compilers, [GCC](https://gcc.gnu.org/gcc-16/criteria.html) does not have higher-tier support for RISC-V, though it does support MIPS. Clang does test RISC-V, for instance, it seems to run over 6000 RISC-V specific unit tests [here](https://lab.llvm.org/buildbot/#/builders/87/builds/4010/steps/11/logs/stdio). But, as with Go compiler, only large target ISAs are covered. 
 
 [The RISE Project](https://riseproject.dev/) is pursuing improvements for compiler testing and support for RISC-V targets. We refer to their blog for information on support for [Rust](https://riseproject.dev/2025/04/15/project-rp004-support-for-a-64-bit-risc-v-linux-port-of-rust-to-tier-1/) and [Go](https://riseproject.dev/2025/04/04/advancing-go-on-risc-v-progress-through-the-rise-project/).
 
@@ -155,7 +145,7 @@ One the one hand, the LLVM stack has tons of eyes on it. On the other hand, it's
 **Mitigations:** Thorough testing and auditing. If the compiler is sufficiently simple and stable, we can become more confident in its security with time "in the wild."
 
 ### Potential Issue 7: Precompiles for proving 
-Due to the fact that execution in arithmetic circuits has a cost model that is fundamentally different to executing on a traditional binary computer, zkVMs introduce what we call "precompiles" to optimize proving for difficult cases, like Keccak hashing. Traditional EVM precompiles have long been (LINK) a target for simplification to improve Ethereum's security. While zkVM precompiles are, in practice, usually related to existing EVM precompiles, they are a distinct notion. zkVM precompiles may also be harder to vanquish than traditional precompiles as we pursue L1 Scaling, since this pursuit creates significant pressures to optimize for execution speed and cost. Note that in the case of EVM precompiles, the execution environment is a piece of commodity hardware, whereas in the zkVM case the execution environment is a virtual environment that is much easier to customize. The relative ease with which we can customize the environment tends to increase the attack surface of the composite system.
+Due to the fact that execution in arithmetic circuits has a cost model that is fundamentally different to executing on a traditional binary computer, zkVMs introduce zkVM precompiles to optimize proving for difficult cases, like Keccak hashing. Traditional EVM precompiles have long been a target for simplification to improve Ethereum's security. While zkVM precompiles are, in practice, usually related to existing EVM precompiles, they are a distinct notion. zkVM precompiles may also be harder to vanquish than traditional precompiles as we pursue L1 Scaling, since this pursuit creates significant pressures to optimize for execution speed and cost. Note that in the case of EVM precompiles, the execution environment is a piece of commodity hardware, whereas in the zkVM case the execution environment is a virtual environment that is much easier to customize. The relative ease with which one can customize the environment tends to increase the attack surface of the composite system.
 
 **Level of concern:** Medium-High 
 These precompiles tend to be complex.

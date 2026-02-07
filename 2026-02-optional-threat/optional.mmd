@@ -1,33 +1,30 @@
-flowchart TD
+flowchart LR
     classDef protocol fill:#3b82f6,stroke:#1d4ed8,color:#fff
     classDef question fill:#9ca3af,stroke:#6b7280,color:#fff
     classDef bad fill:#ef4444,stroke:#b91c1c,color:#fff
     classDef good fill:#22c55e,stroke:#16a34a,color:#fff
 
-    proofs_produced["k Proofs produced"]:::protocol
+    zkevm_correct["ZKEVM is correct"]:::protocol
     proofs_well_distributed["All proofs well distributed"]:::protocol
-    proofs_valid["Proofs accurate"]:::protocol
-    verifier_correct["Verifiers correct"]:::protocol
-    signature_valid["Attester signature accurate"]:::protocol
+    proofs_produced["Enough proofs produced"]:::protocol
+
+    subgraph classical[" "]
+        signature_valid["Attester signatures accurate"]:::protocol
+        stan_big["> 1/3 of the stake?"]:::question
+        stan_huge["> 2/3 of the stake?"]:::question
+      subgraph outcomes[" "]
+        attesters_offline["Attesters offline"]:::bad
+        not_finalizing["Chain split"]:::bad
+        consensus_failure["Consensus failure"]:::bad
+        valid_transition["Valid state transition"]:::good
+      end
+    end
 
     stan_global_outage["Global StAN outage"]:::question
-    stan_big["> 1/3 of the stake?"]:::question
-    stan_huge["> 2/3 of the stake?"]:::question
     stan_partial_outage["Partial StAN outage"]:::question
-    all_k_1["Affects every k-subset?"]:::question
-    sufficiently_corrleated["Sufficiently correlated?"]:::question
-    signature_failure["Signature verification failure"]:::question
-    soundness_bug["Soundness bug"]:::question
-    completeness_bug["Completeness bug"]:::question
+    sufficiently_correlated["Sufficiently correlated?"]:::question
     zkevm_bug["zkEVM bug"]:::question
 
-
-    attesters_offline["Attesters offline"]:::bad
-    not_finalizing["Non-finality"]:::bad
-    consensus_failure["Consensus failure"]:::bad
-    invalid_transition["Invalid transition accepted"]:::bad
-
-    valid_transition["Valid state transition"]:::good
 
     proofs_produced -- "no" --> stan_global_outage
     stan_global_outage --> stan_big
@@ -37,23 +34,21 @@ flowchart TD
     stan_huge --"yes"--> consensus_failure
     proofs_produced -- "yes" --> proofs_well_distributed
 
+    proofs_well_distributed -- "yes" --> zkevm_correct
     proofs_well_distributed -- "no" --> stan_partial_outage
     stan_partial_outage --> stan_big
-    proofs_well_distributed -- "yes" --> proofs_valid
 
-    proofs_valid -- "yes" --> verifier_correct
-    proofs_valid -- "no" --> zkevm_bug
-    zkevm_bug --> completeness_bug
-    completeness_bug --> all_k_1
-    all_k_1 -- "yes" --> stan_big
-    zkevm_bug --> soundness_bug
-    soundness_bug --> sufficiently_corrleated
-    sufficiently_corrleated --> invalid_transition
+    zkevm_bug --> sufficiently_correlated
+    sufficiently_correlated -- "yes" --> stan_big
+    sufficiently_correlated -- "no" --> attesters_offline
 
-    verifier_correct -- "no" --> zkevm_bug
-    verifier_correct -- "yes" --> signature_valid
+    zkevm_correct -- "no" --> zkevm_bug
+    zkevm_correct -- "yes" --> signature_valid
 
-    signature_valid -- "no" --> signature_failure
+    signature_valid -- "no" --> stan_big
     signature_valid -- "yes" --> valid_transition
+
+    style classical fill:none
+    style outcomes fill:none, stroke:none
 
 

@@ -14,11 +14,10 @@ _paginate: false
 
 # Steps toward zkEVM Specifications
 
-## How will we know what these things are doing??
 
-Cody Gunton - zkEVM Team @ Ethereum Foundation
+Cody Gunton - EthBoulder 2026
 
-<img src="assets/logo-zkevm.svg" class="logo" alt="">
+<div class="bottom-bar"><img src="assets/logo-zkevm.svg" class="logo" alt=""></div>
 
 ---
 # Ultimate Goal

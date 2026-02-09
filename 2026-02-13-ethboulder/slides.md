@@ -52,9 +52,13 @@ To achieve Ethereum scaling with no security compromises.
 
 ---
 
+<!-- _class: lead -->
+<!-- _paginate: false -->
+
 # Details
+
 Signal:   @cody.1337
 Telegram: @codygunton
 X: @codytouchgrass
 
-
+<div class="bottom-bar"><img src="assets/logo-zkevm.svg" class="logo" alt=""></div>

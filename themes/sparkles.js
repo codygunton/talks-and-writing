@@ -38,11 +38,11 @@
     rafId = requestAnimationFrame(draw);
   }
 
-  // Only animate when on the first slide
+  // Only animate when on a lead slide (title/closing)
   function checkSlide() {
     var active = document.querySelector("svg.bespoke-marp-active");
-    var isFirst = active && active.querySelector("section.lead");
-    if (isFirst) {
+    var isLead = active && active.querySelector("section.lead");
+    if (isLead) {
       bg.style.display = "";
       if (!rafId) draw();
     } else {

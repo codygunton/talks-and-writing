@@ -1,7 +1,7 @@
 ---
 marp: true
 lang: en-US
-title: How will we know the ZKEVMs are doing the right thing?
+title: Progress on zkEVM Specs
 theme: zkevm
 transition: fade
 paginate: true
@@ -13,7 +13,7 @@ _paginate: false
 <script src="assets/sparkles.js"></script>
 <script src="assets/livereload.js"></script>
 
-# How will we know what ZKEVMs are doing??
+# Progress on zkEVM Specs
 
 
 Cody Gunton - EthBoulder 2026

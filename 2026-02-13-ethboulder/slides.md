@@ -11,8 +11,9 @@ _paginate: false
 <!-- _class: lead -->
 
 <script src="assets/sparkles.js"></script>
+<script src="assets/livereload.js"></script>
 
-# Steps toward zkEVM Specifications
+# How will we know what ZKEVMs are doing??
 
 
 Cody Gunton - EthBoulder 2026
@@ -20,35 +21,36 @@ Cody Gunton - EthBoulder 2026
 <div class="bottom-bar"><img src="assets/logo-zkevm.svg" class="logo" alt=""></div>
 
 ---
-# Ultimate Goal
+# Outline
 
-Collaborate with 
- - Security team: https://security.ethereum.org/
- - Formal verification project: https://verified-zkevm.org/
- - ...y'all
+<div class="columns">
+<div class="no-marker">
 
+* What is L1-ZKEVM project?
+  - basic diagrams of "what are we doing"
+  - eth-act
+* Optional vs Mandatory
+  - link to 8025 proposal
+  - multiproofs strategy
+* consensus specs
+  - what they are
+  - they need to have verifiers in them
 
-To achieve Ethereum scaling with no security compromises.
+</div>
+<div class="no-marker">
 
----
+* ongoing work
+  - python specs
+  - verified zkevm
+  - whitepaper
+* Closing
+  - breakout call
+  - H* target
+* Refs
+  - my blog pos
 
-# Phases for my work
-1. **Research and proof of concept phase:** What/when/how to build security tools; assess tooling ecosystem; identify gaps
-2. **Build out phase** build high quality tools and high impact shareable components, coordination and tracking
-3. **Hardening** hunt bugs and patch, coordination and tracking
-
-
-
----
-
-# Phase 1 Progress
- - Applying RISC-V Arch Tests
-   - https://github.com/riscv-non-isa/riscv-arch-test
- - RISC-V emulator fuzzer:
-   - https://github.com/codygunton/cazkade
- - Next: Plonky3 verifier fuzzer
-
-
+</div>
+</div>
 
 ---
 

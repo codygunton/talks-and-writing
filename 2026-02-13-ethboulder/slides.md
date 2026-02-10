@@ -10,6 +10,7 @@ _paginate: false
 
 <!-- _class: lead -->
 
+<script src="assets/theme-bg.js"></script>
 <script src="assets/sparkles.js"></script>
 <script src="assets/livereload.js"></script>
 

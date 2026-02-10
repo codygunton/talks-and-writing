@@ -1,0 +1,11 @@
+{
+  "name": "2026-02-11-zkevm-breakout",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "preview": "./preview.sh"
+  },
+  "devDependencies": {
+    "@marp-team/marp-cli": "^4.2.0"
+  }
+}

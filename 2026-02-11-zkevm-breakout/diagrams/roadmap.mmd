@@ -1,0 +1,32 @@
+gantt
+    title Optional Proofs Security Roadmap (🌾👨🧂)
+    dateFormat YYYY-MM-DD
+    axisFormat ♦
+
+    section Phase 1
+    Write down threat model               :p1a, 2026-02-11, 6w
+    Agree on launch gating requirements   :p1b, 2026-02-11, 6w
+    Reaffirm cryptography requirements    :p1e, 2026-02-11, 6w
+    Reaffirm capex targets                :p1f, 2026-02-11, 6w
+    Decide on fallback strategy           :p1c, 2026-02-11, 2026-06-01
+    Develop MVP testing baseline          :p1g, 2026-02-11, 2026-06-01
+    Soundcalc integration                 :p2i, 2026-02-11, 2026-03-01
+    100 bits, ≤600KiB proofs, recursion sketch  :p2j, after p2i, 2026-06-01
+    Write down diversity requirements     :p1d, after p1b, 2026-06-01
+    Develop inclusion criteria            :p1h, after p1b, 2026-06-01
+    Validate hardware requirements        :p2g, after p1f, 2026-06-01
+    Set inclusion criteria and launch blockers :milestone, 2026-06-01, 0d
+
+    section Phase 2
+    Build prover network monitoring       :p2f, 2026-06-01, 2026-11-01
+    Implement testing                     :p2b, 2026-06-01, 2026-11-01
+    Implement test monitoring             :p2c, 2026-06-01, 2026-11-01
+    Reproduce provers                     :p2a, 2026-06-01, 2026-11-01
+    128 bits, ≤300KiB proofs, recursion argument :p2j, 2026-06-01, 2026-11-01
+    Choose ZKEVMs, set k-tuples           :milestone, 2026-11-01, 0d
+
+    section Phase 3
+    Write incident response plans         :p2e, 2026-11-01, 2026-12-01
+    Monitor for stability (3 months)      :p3a, 2026-11-01, 2027-02-01
+    Test incident response                :p3b, 2026-12-01, 2027-02-01
+    Hegotá target                         :milestone, 2027-02-01, 0d

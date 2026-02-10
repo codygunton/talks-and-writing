@@ -260,6 +260,17 @@ section.lead h2 {
   align-items: start;
 }
 
+/* Hide top-level bullet markers (for fragmented lists used as groups) */
+.no-marker > ul {
+  list-style: none;
+  padding-left: 0;
+  margin-left: 0;
+}
+
+.no-marker > ul > li {
+  margin-bottom: 0.6em;
+}
+
 /* Highlight box */
 .highlight {
   background: rgba(13, 175, 210, 0.1);

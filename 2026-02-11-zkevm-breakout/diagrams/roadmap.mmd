@@ -1,8 +1,40 @@
+%%{init: {
+  'theme': 'base',
+  'themeVariables': {
+    'primaryColor': '#1e2a3a',
+    'primaryTextColor': '#e8edf3',
+    'primaryBorderColor': '#0DAFD2',
+    'secondaryColor': '#243044',
+    'secondaryTextColor': '#e8edf3',
+    'secondaryBorderColor': '#8abff9',
+    'tertiaryColor': '#1a2535',
+    'tertiaryTextColor': '#e8edf3',
+    'lineColor': '#8abff9',
+    'textColor': '#e8edf3',
+    'mainBkg': '#1e2a3a',
+    'sectionBkgColor': '#2a3040',
+    'sectionBkgColor2': '#2a3040',
+    'gridColor': '#2a3a4e',
+    'cScale0': '#3fc5dd',
+    'cScale1': '#3fc5dd',
+    'cScale2': '#3fc5dd',
+    'cScaleLabel0': '#e8edf3',
+    'cScaleLabel1': '#e8edf3',
+    'cScaleLabel2': '#e8edf3',
+    'taskTextColor': '#e8edf3',
+    'taskBorderColor': '#3fc5dd',
+    'todayLineColor': '#0DAFD2',
+    'fontFamily': 'Inter, sans-serif',
+    'fontSize': '14px'
+  },
+  'gantt': { 'useWidth': 1140, 'rightPadding': 200 }
+}}%%
 gantt
     title Optional Proofs Security Roadmap
     %% NOTE: the dates below are just to establish relative sizes of bars.
     %% They do not directly correspond to agreed-upon deadlines.
     dateFormat YYYY-MM-DD
+    todayMarker off
     axisFormat ♦
 
     section Phase 1

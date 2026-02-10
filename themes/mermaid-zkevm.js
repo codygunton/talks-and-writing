@@ -1,37 +1,7 @@
 import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
 
-mermaid.initialize({
-  startOnLoad: false,
-  theme: 'base',
-  themeVariables: {
-    primaryColor: '#1e2a3a',
-    primaryTextColor: '#e8edf3',
-    primaryBorderColor: '#0DAFD2',
-    secondaryColor: '#243044',
-    secondaryTextColor: '#e8edf3',
-    secondaryBorderColor: '#8abff9',
-    tertiaryColor: '#1a2535',
-    tertiaryTextColor: '#e8edf3',
-    lineColor: '#8abff9',
-    textColor: '#e8edf3',
-    background: 'transparent',
-    mainBkg: '#1e2a3a',
-    sectionBkgColor: '#2a3040',
-    sectionBkgColor2: '#2a3040',
-    gridColor: '#2a3a4e',
-    cScale0: '#3fc5dd',
-    cScale1: '#3fc5dd',
-    cScale2: '#3fc5dd',
-    cScaleLabel0: '#e8edf3',
-    cScaleLabel1: '#e8edf3',
-    cScaleLabel2: '#e8edf3',
-    taskTextColor: '#e8edf3',
-    todayLineColor: '#0DAFD2',
-    fontFamily: 'Inter, sans-serif',
-    fontSize: '14px',
-  },
-  gantt: { useWidth: 1140, rightPadding: 200 },
-});
+// Minimal init — theme and gantt config live in the .mmd file's %%{init}%% block.
+mermaid.initialize({ startOnLoad: false });
 
 document.querySelectorAll('[data-mermaid]').forEach(async function(el, i) {
   var src = el.getAttribute('data-mermaid');
@@ -41,6 +11,7 @@ document.querySelectorAll('[data-mermaid]').forEach(async function(el, i) {
   var result = await mermaid.render(id, text);
   el.innerHTML = result.svg;
 
+  // — Marp-specific: fit SVG to slide —
   var svgEl = el.querySelector('svg');
   if (svgEl) {
     svgEl.style.width = '100%';
@@ -48,22 +19,21 @@ document.querySelectorAll('[data-mermaid]').forEach(async function(el, i) {
     svgEl.style.maxHeight = '560px';
   }
 
+  // — Marp-specific: transparent background so slide theme shows through —
   var bgRect = el.querySelector('svg > rect');
   if (bgRect) bgRect.setAttribute('fill', 'transparent');
 
+  // — CSS overrides that mermaid themeVariables don't reliably cover —
   var svgStyle = el.querySelector('svg style');
   if (svgStyle) {
     svgStyle.textContent += '\n' +
       '.section0 { fill: #2e3444 !important; opacity: 0.7 !important; }\n' +
       '.section1 { fill: #282e3e !important; opacity: 0.7 !important; }\n' +
       '.section2 { fill: #222838 !important; opacity: 0.7 !important; }\n' +
-      '.task { fill: #3fc5dd !important; stroke: #3fc5dd !important; opacity: 1 !important; }\n' +
-      '.taskText { fill: #e8edf3 !important; }\n' +
-      '.taskTextOutsideRight { fill: #e8edf3 !important; }\n' +
-      '.taskTextOutsideLeft { fill: #e8edf3 !important; }\n';
+      '.task { fill: #3fc5dd !important; stroke: #3fc5dd !important; opacity: 1 !important; }\n';
   }
 
-  // Move all task text to the right of bars, then bold PxTy labels
+  // — Post-processing: position labels outside bars —
   var bars = el.querySelectorAll('svg rect.task');
   el.querySelectorAll('svg text.taskText, svg text.taskTextOutsideRight, svg text.taskTextOutsideLeft').forEach(function(txt) {
     var ty = parseFloat(txt.getAttribute('y'));
@@ -86,6 +56,7 @@ document.querySelectorAll('[data-mermaid]').forEach(async function(el, i) {
         txt.setAttribute('class', 'taskTextOutsideRight');
       }
     }
+    // Bold PxTy prefix
     var m = txt.textContent.match(/^(P\dT\d+꞉)\s*(.*)/);
     if (m) {
       txt.innerHTML = '<tspan font-weight="700">' + m[1] + '</tspan> ' + m[2];

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Serve slides on port 8000 with live reload (access via SSH port-forward)
+# Serve slides on port 8000 (manual refresh needed after edits)
 cd "$(dirname "$0")"
 if [ ! -d node_modules ]; then
   echo "Error: node_modules not found. Run 'npm install' first." >&2

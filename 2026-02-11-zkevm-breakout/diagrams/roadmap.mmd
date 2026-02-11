@@ -30,7 +30,7 @@
   'gantt': { 'useWidth': 1140, 'rightPadding': 200 }
 }}%%
 gantt
-    title Optional Proofs Security Roadmap
+    title Proposed Optional Proofs Security Roadmap
     %% NOTE: the dates below are just to establish relative sizes of bars.
     %% They do not directly correspond to agreed-upon deadlines.
     dateFormat YYYY-MM-DD
@@ -41,9 +41,9 @@ gantt
     P1T1꞉ Write down threat model               :p1t1, 2026-02-11, 6w
     P1T2꞉ Agree on launch gating requirements   :p1t2, 2026-02-11, 6w
     P1T3꞉ Reaffirm cryptography requirements    :p1t3, 2026-02-11, 6w
-    P1T4꞉ Reaffirm capex targets                :p1t4, 2026-02-11, 6w
-    P1T5꞉ Decide on fallback strategy           :p1t5, 2026-02-11, 2026-06-01
-    P1T6꞉ Develop MVP testing baseline          :p1t6, 2026-02-11, 2026-06-01
+    P1T4꞉ Reaffirm capex requirements           :p1t4, 2026-02-11, 6w
+    P1T5꞉ Develop MVP testing baseline          :p1t5, 2026-02-11, 2026-06-01
+    P1T6꞉ ZKEVM spec scoping                    :p1t6, 2026-02-11, 2026-06-01
     P1T7꞉ Soundcalc integration                 :p1t7, 2026-02-11, 2026-03-01
     P1T8꞉ 100 bits, ≤600KiB proofs, recursion sketch  :p1t8, after p1t7, 2026-06-01
     P1T9꞉ Write down diversity requirements     :p1t9, after p1t2, 2026-06-01
@@ -56,11 +56,13 @@ gantt
     P2T2꞉ Implement testing                     :p2t2, 2026-06-01, 2026-11-01
     P2T3꞉ Implement test monitoring             :p2t3, 2026-06-01, 2026-11-01
     P2T4꞉ Reproduce provers                     :p2t4, 2026-06-01, 2026-11-01
-    P2T5꞉ 128 bits, ≤300KiB proofs, recursion argument :p2t5, 2026-06-01, 2026-11-01
+    P2T5꞉ ZKEVM speccing                        :p2t5, 2026-06-01, 2026-11-01
+    P2T6꞉ 128 bits, ≤300KiB proofs, recursion argument :p2t6, 2026-06-01, 2026-11-01
     Choose ZKEVMs, set k-tuples                  :milestone, 2026-11-01, 0d
 
     section Phase 3
     P3T1꞉ Write incident response plans         :p3t1, 2026-11-01, 2026-12-01
     P3T2꞉ Monitor for stability (3 months)      :p3t2, 2026-11-01, 2027-02-01
-    P3T3꞉ Test incident response                :p3t3, 2026-12-01, 2027-02-01
+    P3T3꞉ Spec Review                           :p3t3, 2026-11-01, 2027-02-01
+    P3T4꞉ Test incident response                :p3t4, 2026-12-01, 2027-02-01
     Hegotá target                                :milestone, 2027-02-01, 0d

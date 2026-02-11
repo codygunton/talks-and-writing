@@ -15,8 +15,7 @@ document.querySelectorAll('[data-mermaid]').forEach(async function(el, i) {
   var svgEl = el.querySelector('svg');
   if (svgEl) {
     svgEl.style.width = '100%';
-    svgEl.style.height = 'auto';
-    svgEl.style.maxHeight = '560px';
+    svgEl.style.height = '100%';
   }
 
   // — Marp-specific: transparent background so slide theme shows through —

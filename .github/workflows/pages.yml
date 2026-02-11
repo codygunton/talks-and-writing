@@ -1,0 +1,115 @@
+name: Deploy presentations to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - run: npm install -g @marp-team/marp-cli
+
+      - name: Restore previous build
+        uses: actions/cache@v4
+        with:
+          path: _site
+          key: pages-${{ github.sha }}
+          restore-keys: pages-
+
+      - name: Build changed presentations
+        run: |
+          mkdir -p _site
+
+          # All Marp presentation directories
+          PRESENTATIONS=(
+            "2025-07-11-ethproofs3"
+            "2026-02-11-zkevm-breakout"
+            "2026-02-13-ethboulder"
+          )
+
+          # Find the commit of the last successful deploy (from cache key)
+          PREV_SHA=$(find _site -maxdepth 0 -name '.deploy-sha' -exec cat {} \; 2>/dev/null || echo "")
+
+          for dir in "${PRESENTATIONS[@]}"; do
+            # Rebuild if: no cache, no previous deploy, or directory changed
+            if [ -z "$PREV_SHA" ] || [ ! -d "_site/$dir" ] || \
+               git diff --name-only "$PREV_SHA" HEAD -- "$dir/" "themes/" | grep -q .; then
+              echo "Building $dir..."
+              mkdir -p "_site/$dir"
+              marp "$dir/slides.md" \
+                --theme-set themes/ \
+                --html \
+                -o "_site/$dir/index.html"
+
+              # Copy assets (resolve symlinks with -L)
+              if [ -d "$dir/assets" ]; then
+                cp -rL "$dir/assets" "_site/$dir/assets"
+              fi
+              if [ -d "$dir/diagrams" ]; then
+                cp -rL "$dir/diagrams" "_site/$dir/diagrams"
+              fi
+            else
+              echo "Skipping $dir (unchanged)"
+            fi
+          done
+
+          # Record current SHA for next run
+          echo "$GITHUB_SHA" > _site/.deploy-sha
+
+      - name: Generate index page
+        run: |
+          cat > _site/index.html << 'INDEXEOF'
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset="utf-8">
+            <title>Talks & Writing</title>
+            <style>
+              body { font-family: system-ui; max-width: 600px; margin: 4em auto; color: #e0e0e0; background: #181e26; }
+              a { color: #8abff9; }
+              li { margin: 0.5em 0; }
+            </style>
+          </head>
+          <body>
+            <h1>Talks & Writing</h1>
+            <ul>
+              <li><a href="2025-07-11-ethproofs3/">ethproofs3 (Jul 2025)</a></li>
+              <li><a href="2026-02-11-zkevm-breakout/">zkEVM Breakout (Feb 2026)</a></li>
+              <li><a href="2026-02-13-ethboulder/">ETH Boulder (Feb 2026)</a></li>
+            </ul>
+          </body>
+          </html>
+          INDEXEOF
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

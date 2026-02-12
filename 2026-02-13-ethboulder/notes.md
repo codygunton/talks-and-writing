@@ -2,7 +2,7 @@ What is L1- ZKEVM project?
  - basic diagrams of "what are we doing"
  - eth-act
 
- Optional vs Mandatory:
+Optional vs Mandatory:
  - link to 8025 proposal
  - multiproofs strategy
 
@@ -21,3 +21,15 @@ Closing
 
 Refs
  - my blog pos 
+
+Note that RISC-V replacing EVM is out of scope
+
+----------------------------------
+| Physical Machine
+|        ------------------
+|  In -> | Virtual machine | Out
+|        -------------------
+-----------------------------------
+
+
+

@@ -10,7 +10,7 @@ _paginate: false
 
 <!-- _class: lead -->
 
-<script src="assets/theme-bg.js"it></script>
+<script src="assets/theme-bg.js"></script>
 <script src="assets/sparkles.js"></script>
 <script src="assets/livereload.js"></script>
 
@@ -28,8 +28,8 @@ Cody Gunton - EthBoulder 2026
 <div class="no-marker">
 
 zkVMs create a powerful asymmetry
-  1) A network of low power nodes (verifiers) 
-  2) can check the work of powerful nodes (provers) 
+  1) A network of low-power nodes (verifiers)
+  2) can check the work of powerful nodes (provers)
   3) using only a very small amount of data (hashes and proofs)
 
 Our application is Ethereum attesting
@@ -65,9 +65,9 @@ Our application is Ethereum attesting
 
 # zkEVM = zkVM + Guest Program
 
-There are many candidates zkVMs and there are many candidate "guest programs" (i.e., the transaction checking programs that need to be proved).
+There are many candidate zkVMs and many candidate "guest programs" (i.e., the transaction-checking programs that need to be proved).
 
-Justin Drake tracks these carefully and presents at Ethproofs [calls](https://youtube.com/playlist?list=PLJqWcTqh_zKGthi2bQDVOcNWXCSvH1sgB) and [events](https://youtube.com/playlist?list=PLJqWcTqh_zKF-gamT-xOEQD7BbrrIGlcH)
+Justin Drake tracks these carefully and presents at Ethproofs [calls](https://youtube.com/playlist?list=PLJqWcTqh_zKGthi2bQDVOcNWXCSvH1sgB) and [events](https://youtube.com/playlist?list=PLJqWcTqh_zKF-gamT-xOEQD7BbrrIGlcH).
 
 <div class="columns" style="margin-top:2em";>
 
@@ -88,7 +88,7 @@ Justin Drake tracks these carefully and presents at Ethproofs [calls](https://yo
 
  * Mandatory proofs
    - Proofs disappear ==> network down
-   - Can incrase gas limit to where re-execution would fail to keep up with the chain on current attester hardware.
+   - Can increase gas limit to where re-execution would fail to keep up with the chain on current attester hardware.
 
 ---
 
@@ -115,9 +115,9 @@ Justin Drake tracks these carefully and presents at Ethproofs [calls](https://yo
 </div>
 <div>
 
-<img src="images/eth-act.png" alt="Eth ACT" style="width:100%;margin-bottom:1em;">
+<img src="images/eth-act.png" alt="Eth ACT" style="width:100%;margin-bottom:0.5em;">
 
-<img src="images/breakout-call.png" alt="8025 Breakout" style="width:100%;">
+<img src="images/breakout-call.png" alt="8025 Breakout" style="width:80%;">
 
 </div>
 </div>
@@ -148,13 +148,13 @@ Justin Drake tracks these carefully and presents at Ethproofs [calls](https://yo
 
 <div class="no-marker";>
 
-- ZK is a fast moving field and teams mostly do not have specs of their proving systems.
+- ZK is a fast-moving field and teams mostly do not have specs of their proving systems.
 
-* Core papers exist, but prod systems differ in many ways, big and small. 
+* Core papers exist, but production systems differ in many ways, big and small.
 
 * Some core questions we must answer:
   - Is the zk protocol behind {zkVM} secure?
-  - Does {zkVM} implement is protocol correctly?
+  - Does {zkVM} implement its protocol correctly?
   - Does {zkVM} implement RISC-V correctly?
   - Does {guest program} implement the EVM correctly?
 
@@ -165,7 +165,7 @@ Justin Drake tracks these carefully and presents at Ethproofs [calls](https://yo
 # Is the zk protocol behind {zkVM name} secure?
 <div class="no-marker" style="margin-top:-1em";>
 
-* _Soon:_ [Whitepapers](https://zkevm.ethereum.foundation/blog/cryptography-research-update) 
+* _Soon:_ [Whitepapers](https://zkevm.ethereum.foundation/blog/cryptography-research-update)
   Purpose: Researchers will provide formal guarantees of security.
 
 * _Later:_ [Arklib](https://github.com/Verified-zkEVM/ArkLib) specs in Lean
@@ -177,11 +177,11 @@ Justin Drake tracks these carefully and presents at Ethproofs [calls](https://yo
 
 <div class="no-marker" style="margin-top:-1em";>
 
-* _Soon:_ Auditing 
+* _Soon:_ Auditing
   Purpose: Auditors will check that the implementations match the specs.
 
 * _Later:_ Formal proving
-  Purpose: Formal verification engineers will show that a translation of the implementation to Lean matches the Lean spec using machine-assisted proving. 
+  Purpose: Formal verification engineers will show that a translation of the implementation to Lean matches the Lean spec using machine-assisted proving.
 
 </div>
 
@@ -191,19 +191,19 @@ Justin Drake tracks these carefully and presents at Ethproofs [calls](https://yo
 
 <div class="no-marker";>
 
-  * _Done:_ [Sail spec](https://github.com/riscv/sail-riscv) already written before Ethereum community interest. 
+  * _Done:_ [Sail spec](https://github.com/riscv/sail-riscv) already written before Ethereum community interest.
     Purpose: Describe a consistent set of rules for the operation of a computer. Reminder: this is the virtual computer that runs the EVM inside of a prover.
-   _Later:_ Machine-assisted proofs that the zkEVMs correctly implement RISC-V.
+  * _Later:_ Machine-assisted proofs that the zkVMs correctly implement RISC-V.
 
 </div>
 
 # Does {guest program} implement the EVM correctly?
 <div class="no-marker";>
 
-  * _Now:_ Formal specifications of the EVM
-    Purpose: Describe the EVM in precise terms suitable for  
-    _Now:_ Testing against this spec.
-   _Later:_ Machine-assisted proofs that the zkEVMs correctly implement RISC-V.
+  * _Now:_ Formal specifications of the EVM.
+    Purpose: Describe the EVM in precise terms suitable for formal reasoning.
+  * _Now:_ Testing against this spec.
+  * _Later:_ Machine-assisted proofs that the guest programs correctly implement the EVM.
 
 </div>
 
@@ -214,7 +214,7 @@ Justin Drake tracks these carefully and presents at Ethproofs [calls](https://yo
 <div class="columns" style="align-items:center;flex:1;align-content:center;">
 <div>
 
-Experiment: ZisK prover  & verifier (C++ & CUDA) --> Python then simplify
+Experiment: ZisK prover & verifier (C++ & CUDA) --> Python then simplify
 Reinforced by real tests
 ⚠️Not a "spec" until the ZisK team says it reflects their intentions ⚠️
 

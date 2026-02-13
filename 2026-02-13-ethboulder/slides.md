@@ -80,9 +80,9 @@ Justin Drake tracks these carefully and presents at Ethproofs [calls](https://yo
 
 <div class="columns" style="margin-top:2em";>
 
-<img src="images/jd-zkvm.png" alt="zkVM comparison" style="width:100%;">
+<img src="images/jd-zkvm.png" alt="zkVM performance comparison table" style="width:100%;">
 
-<img src="images/jd-guest.png" alt="Guest program tracker" style="width:100%;">
+<img src="images/jd-guest.png" alt="Guest program progress tracker" style="width:100%;">
 
 </div>
 
@@ -102,7 +102,7 @@ Justin Drake tracks these carefully and presents at Ethproofs [calls](https://yo
 ---
 
 
-<img src="images/eip-8025.png" alt="zkVM comparison" style="width:100%;">
+<img src="images/eip-8025.png" alt="EIP-8025 optional proofs specification" style="width:100%;">
 
 ---
 
@@ -124,9 +124,9 @@ Justin Drake tracks these carefully and presents at Ethproofs [calls](https://yo
 </div>
 <div>
 
-<img src="images/eth-act.png" alt="Eth ACT" style="width:100%;margin-bottom:0.5em;">
+<img src="images/eth-act.png" alt="eth-act planning repository" style="width:100%;margin-bottom:0.5em;">
 
-<img src="images/breakout-call.png" alt="8025 Breakout" style="width:80%;">
+<img src="images/breakout-call.png" alt="EIP-8025 breakout call" style="width:80%;">
 
 </div>
 </div>
@@ -135,7 +135,7 @@ Justin Drake tracks these carefully and presents at Ethproofs [calls](https://yo
 
 # What do the plans look like?
 
-<img src="images/planning-repo.png" alt="Planning repo" style="width:100%;">
+<img src="images/planning-repo.png" alt="eth-act planning repo issues" style="width:100%;">
 
 ---
 
@@ -209,7 +209,7 @@ Justin Drake tracks these carefully and presents at Ethproofs [calls](https://yo
 </div>
 <div class="no-marker";>
 
-* <img src="images/openvm-riscv-fv.png" alt="OpenVM FV" style="width:100%;">
+* <img src="images/openvm-riscv-fv.png" alt="OpenVM RISC-V formal verification" style="width:100%;">
 
 </div>
 </div>
@@ -240,7 +240,7 @@ Reinforced by real tests
 </div>
 <div>
 
-<img src="images/python-spec.png" alt="Python spec" style="width:100%;">
+<img src="images/python-spec.png" alt="ZisK Python specification code" style="width:100%;">
 
 </div>
 </div>
@@ -259,7 +259,7 @@ Reinforced by 'the same' tests; no machine proofs yet
 </div>
 <div>
 
-<img src="images/lean-spec.png" alt="Lean spec" style="width:100%;">
+<img src="images/lean-spec.png" alt="ZisK Lean specification code" style="width:100%;">
 
 </div>
 </div>
@@ -278,7 +278,7 @@ Result: it can in 8 hours and at little cost.
 </div>
 <div>
 
-<img src="images/polishchuk-spielman.png" alt="Aleph proof" style="width:100%;">
+<img src="images/polishchuk-spielman.png" alt="AI-generated formal proof of Polishchuk-Spielman theorem" style="width:100%;">
 
 </div>
 </div>

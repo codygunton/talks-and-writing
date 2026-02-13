@@ -1,0 +1,15 @@
+%%{init: {"theme": "dark", "themeVariables": {"primaryColor": "#2e3444", "primaryTextColor": "#e0e0e0", "lineColor": "#3fc5dd", "secondaryColor": "#282e3e"}}}%%
+flowchart LR
+    classDef io fill:#2e3444,stroke:#3fc5dd,color:#e0e0e0
+    classDef proc fill:#3fc5dd,stroke:#1d4ed8,color:#181e26
+    classDef proof fill:#22c55e,stroke:#16a34a,color:#181e26
+    classDef result fill:#2e3444,color:#e0e0e0
+
+    subgraph Attester["Attester Node"]
+            direction LR
+            Inputs["pre-state root, post-state root, block hash, EVM implementation"]:::io --> ZKV
+            Proof:::proof --> ZKV[zkVM Verifier]:::proc
+            ZKV --> Result["True / False"]:::result
+    end
+
+    style Attester fill:none,stroke:#9ca3af,color:#e0e0e0

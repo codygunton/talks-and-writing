@@ -16,8 +16,7 @@ _paginate: false
 
 # Progress on zkEVM Scaling
 
-
-Cody Gunton - EthBoulder 2026
+https://codygunton.github.io/talks-and-writing/2026-02-13-ethboulder/
 
 <img src="images/qr-slides.png" alt="QR code to slides" style="width:140px;border-radius:0;">
 
@@ -59,9 +58,11 @@ Our application is Ethereum attesting
 
 # More specific diagrams
 
-<div style="display:flex;justify-content:center;"><div data-mermaid="diagrams/zkvm-prover-riscv.mmd" style="width:100%;"></div></div>
+<div style="display:flex;justify-content:center;"><div data-mermaid="diagrams/zkvm-prover-riscv.mmd" style="width:60%;"></div></div>
 
-⚠️I am _not_ talking about replacing the EVM with a RISC-V machine ⚠️
+<div style="display:flex;justify-content:center;"><div data-mermaid="diagrams/zkvm-verifier-riscv.mmd" style="width:60%;"></div></div>
+
+⚠️ I am not talking about replacing the EVM with a RISC-V machine here ⚠️
 
 ---
 
@@ -86,10 +87,10 @@ Justin Drake tracks these carefully and presents at Ethproofs [calls](https://yo
  * Optional Proofs: client software ships with a flag that enables an extra step to deal with proofs and their verification, while still doing re-execution. 
    - Trial period for gathering data, experience, ironing out bugs.
    - Proofs are not required for the network to function unless a large % of people opt out of re-execution.
-   - Cannot increase the gas limit.
+   - Cannot increase the gas limit because of this.
 
  * Mandatory proofs
-   - Proofs disappear ==> network down
+   - Proofs disappear ==> network down.
    - Can increase gas limit to where re-execution would fail to keep up with the chain on current attester hardware.
 
 ---

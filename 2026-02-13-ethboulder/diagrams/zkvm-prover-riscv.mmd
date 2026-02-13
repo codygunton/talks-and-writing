@@ -4,15 +4,15 @@ flowchart LR
     classDef proc fill:#3fc5dd,stroke:#1d4ed8,color:#181e26
     classDef proof fill:#22c55e,stroke:#16a34a,color:#181e26
 
-    subgraph Physical["Physical Machine"]
-        direction LR
-        In["In = block, pre-state roots"]:::io --> Program["EVM implementation"]:::proc
+    subgraph Physical["Prover Machine"]
+    direction LR
+        In["block, pre-state"]:::io --> Program["EVM implementation"]:::proc
         subgraph Prover["zkVM Prover"]
             subgraph VM["RISC-V VM"]
                 Program
             end
         end
-        Program --> Out["Out = post-state roots"]:::io
+        Program --> Out["post-state"]:::io
         Prover --> Proof:::proof
     end
 

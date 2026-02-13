@@ -19,6 +19,8 @@ _paginate: false
 
 Cody Gunton - EthBoulder 2026
 
+<img src="images/qr-slides.png" alt="QR code to slides" style="width:140px;border-radius:0;">
+
 <div class="bottom-bar"><img src="assets/logo-zkevm.svg" class="logo" alt=""></div>
 
 ---

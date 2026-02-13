@@ -60,16 +60,13 @@ jobs:
                 --html \
                 -o "_site/$dir/index.html"
 
-              # Copy assets (resolve symlinks with -L)
-              if [ -d "$dir/assets" ]; then
-                cp -rL "$dir/assets" "_site/$dir/assets"
-              fi
-              if [ -d "$dir/diagrams" ]; then
-                cp -rL "$dir/diagrams" "_site/$dir/diagrams"
-              fi
-              if [ -d "$dir/images" ]; then
-                cp -rL "$dir/images" "_site/$dir/images"
-              fi
+              # Copy assets (resolve symlinks with -L); remove stale dirs first
+              for subdir in assets diagrams images; do
+                if [ -d "$dir/$subdir" ]; then
+                  rm -rf "_site/$dir/$subdir"
+                  cp -rL "$dir/$subdir" "_site/$dir/$subdir"
+                fi
+              done
             else
               echo "Skipping $dir (unchanged)"
             fi

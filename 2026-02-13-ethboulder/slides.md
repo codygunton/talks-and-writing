@@ -99,33 +99,34 @@ Justin Drake tracks these carefully and presents at Ethproofs [calls](https://yo
 
 # Who is shipping this?
 
-* zkVM teams
-* Core devs (EL and CL) and newer guest program teams
-* EF zkEVM Team 
-* Justin Drake and EF Ethproofs Team
-* EF Snarkification Team
-* EF Cryptography Team
-* EF EthPandaOps Team
-* EF Robust Incentives Group
-* Grantees
+<div class="columns" style="align-items:center;">
+<div>
 
+- zkVM teams
+- Core devs (EL and CL) and newer guest program teams
+- EF zkEVM Team
+- Justin Drake and EF Ethproofs Team
+- EF Snarkification Team
+- EF Cryptography Team
+- EF EthPandaOps Team
+- EF Robust Incentives Group
+- Grantees
 
----
+</div>
+<div>
 
-# Who is working on shipping this?
+<img src="images/eth-act.png" alt="Eth ACT" style="width:100%;margin-bottom:1em;">
 
-<div class="columns" style="margin-top:2em";>
-
-<img src="images/eth-act.png" alt="Eth ACT" style="width:100%;">
 <img src="images/breakout-call.png" alt="8025 Breakout" style="width:100%;">
 
+</div>
 </div>
 
 ---
 
 # What do the plans look like?
 
-<img src="images/planning-breakout-call.png"repo.png" alt="8025 Breakout" style="width:100%;">
+<img src="images/planning-repo.png" alt="Planning repo" style="width:100%;">
 
 ---
 
@@ -136,9 +137,10 @@ Justin Drake tracks these carefully and presents at Ethproofs [calls](https://yo
 
 ---
 
-TODO: i want this slide to look special. I want it to look like a title slide with vertically centered text large
-# A deeper look at some specification initiatives
+<!-- _class: lead -->
+<!-- _paginate: false -->
 
+# A deeper look at some specification initiatives
 
 ---
 
@@ -146,7 +148,7 @@ TODO: i want this slide to look special. I want it to look like a title slide wi
 
 <div class="no-marker";>
 
-* ZK is a fast moving field and teams mostly do not have specs of their proving systems.
+- ZK is a fast moving field and teams mostly do not have specs of their proving systems.
 
 * Core papers exist, but prod systems differ in many ways, big and small. 
 
@@ -209,53 +211,77 @@ TODO: i want this slide to look special. I want it to look like a title slide wi
 
 # Accelerating with AI
 
+<div class="columns" style="align-items:center;flex:1;align-content:center;">
+<div>
+
 Experiment: ZisK prover  & verifier (C++ & CUDA) --> Python then simplify
-⚠️Not a "spec" until the ZisK team matches it with their intentions ⚠️
+Reinforced by real tests
+⚠️Not a "spec" until the ZisK team says it reflects their intentions ⚠️
 
+</div>
+<div>
 
-TODO: this is not centering horizontally
-<img src="images/python-spec.png" alt="8025 Breakout" style="justify-content:center;width:75%;">
+<img src="images/python-spec.png" alt="Python spec" style="width:100%;">
+
+</div>
+</div>
 
 ---
 
 # Accelerating with AI
+
+<div class="columns" style="align-items:center;flex:1;align-content:center;">
+<div>
 
 Experiment: Simplified Python verifier --> Lean
 Reinforced by 'the same' tests; no machine proofs yet
-⚠️Also not a "spec" until the ZisK team matches it with their intentions ⚠️
+⚠️Also not a "spec" until the ZisK team says it reflects their intentions ⚠️
 
-TODO screenshot
+</div>
+<div>
 
+<img src="images/lean-spec.png" alt="Lean spec" style="width:100%;">
+
+</div>
+</div>
 
 ---
 
 # Accelerating with AI
+
+<div class="columns" style="align-items:center;flex:1;align-content:center;">
+<div>
 
 Experiment by Alex Hicks: see if AI can autonomously provide a significant formal machine proof of a difficult theorem relating to error correcting codes.
 
 Result: it can in 8 hours and at little cost.
 
-TODO: screenshot
+</div>
+<div>
 
+<img src="images/polishchuk-spielman.png" alt="Aleph proof" style="width:100%;">
+
+</div>
+</div>
 
 ---
 
 # References
-## Optional Proofs
+
+Some eth-act repositories
+https://github.com/eth-act/planning
+https://github.com/eth-act/zkvm-standards
+
+Optional proofs
 https://eips.ethereum.org/EIPS/eip-8025
 https://github.com/ethereum/consensus-specs/tree/master/specs/_features/eip8025
 
-## Blog posts
-Link to my blog post
-Link to George's blog post
+Blog posts
+https://zkevm.ethereum.foundation/blog/zkevm-security-overview
+https://zkevm.ethereum.foundation/blog/cryptography-research-update
 
-## Events
-Breakout call link
-Best Day
-Possible interop event later this year
-
-## Ongoing work:
-Link to zisk specs
+ZisK spec experiment
+https://github.com/codygunton/pil2-proofman/tree/python-spec
 
 ---
 

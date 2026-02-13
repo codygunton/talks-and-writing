@@ -33,7 +33,9 @@ zkVMs create a powerful asymmetry
   2) can check the work of powerful nodes (provers)
   3) using only a very small amount of data (hashes and proofs)
 
-Our application is Ethereum attesting
+Our application is Ethereum attesting. 
+
+Right now, attesters re-execute every transaction.
   1) attesters will be low-power nodes who will verify proofs
   2) proofs will be produced by computationally powerful provers
   3) attesters will only need a small amount of data even as we increase throughput
@@ -62,7 +64,11 @@ Our application is Ethereum attesting
 
 <div style="display:flex;justify-content:center;"><div data-mermaid="diagrams/zkvm-verifier-riscv.mmd" style="width:60%;"></div></div>
 
-⚠️ I am not talking about replacing the EVM with a RISC-V machine here ⚠️
+<div class="no-marker">
+
+* ⚠️ I am not talking about replacing the EVM with a RISC-V machine here ⚠️
+
+</div>
 
 ---
 
@@ -171,7 +177,7 @@ Justin Drake tracks these carefully and presents at Ethproofs [calls](https://yo
 * _Soon:_ [Whitepapers](https://zkevm.ethereum.foundation/blog/cryptography-research-update)
   Purpose: Researchers will provide formal guarantees of security.
 
-* _Later:_ [Arklib](https://github.com/Verified-zkEVM/ArkLib) specs in Lean
+* _Later:_ [Arklib](https://github.com/Verified-zkEVM/ArkLib) specs in Lean by https://verified-zkevm.org/ 
   Purpose: Unambiguous formal description specification; formal verification engineers will make machine-assisted proofs of security claims.
 
 </div>
@@ -192,13 +198,23 @@ Justin Drake tracks these carefully and presents at Ethproofs [calls](https://yo
 
 # Does {zkVM name} implement RISC-V correctly?
 
+<div class="columns" style="align-items:center;flex:1;align-content:center;">
 <div class="no-marker";>
 
   * _Done:_ [Sail spec](https://github.com/riscv/sail-riscv) already written before Ethereum community interest.
     Purpose: Describe a consistent set of rules for the operation of a computer. Reminder: this is the virtual computer that runs the EVM inside of a prover.
   * _Later:_ Machine-assisted proofs that the zkVMs correctly implement RISC-V.
 
+
 </div>
+<div class="no-marker";>
+
+* <img src="images/openvm-riscv-fv.png" alt="OpenVM FV" style="width:100%;">
+
+</div>
+</div>
+
+---
 
 # Does {guest program} implement the EVM correctly?
 <div class="no-marker";>

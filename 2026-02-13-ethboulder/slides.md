@@ -271,7 +271,7 @@ Reinforced by 'the same' tests; no machine proofs yet
 <div class="columns" style="align-items:center;flex:1;align-content:center;">
 <div>
 
-Experiment by Alex Hicks: see if AI can autonomously provide a significant formal machine proof of a difficult theorem relating to error correcting codes.
+Experiment by Alex Hicks: see if AI can autonomously provide a formal machine proof of a significant lemma relating to error correcting codes.
 
 Result: it can in 8 hours and at little cost.
 

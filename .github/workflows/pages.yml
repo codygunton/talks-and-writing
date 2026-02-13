@@ -67,6 +67,9 @@ jobs:
               if [ -d "$dir/diagrams" ]; then
                 cp -rL "$dir/diagrams" "_site/$dir/diagrams"
               fi
+              if [ -d "$dir/images" ]; then
+                cp -rL "$dir/images" "_site/$dir/images"
+              fi
             else
               echo "Skipping $dir (unchanged)"
             fi

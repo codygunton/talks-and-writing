@@ -1,7 +1,7 @@
-%%{init: {"theme": "dark", "themeVariables": {"primaryColor": "#2e3444", "primaryTextColor": "#e0e0e0", "lineColor": "#3fc5dd", "secondaryColor": "#282e3e"}}}%%
+%%{init: {"theme": "default", "themeVariables": {"primaryColor": "#eef1f6", "primaryTextColor": "#334155", "lineColor": "#0c9fde", "secondaryColor": "#f5f7fa"}}}%%
 flowchart LR
-    classDef io fill:#2e3444,stroke:#3fc5dd,color:#e0e0e0
-    classDef proc fill:#3fc5dd,stroke:#1d4ed8,color:#181e26
+    classDef io fill:#eef1f6,stroke:#0c9fde,color:#334155
+    classDef proc fill:#0c9fde,stroke:#0a7bb8,color:#ffffff
 
     subgraph Physical["Physical Machine"]
         direction LR
@@ -12,5 +12,5 @@ flowchart LR
         Program --> Out:::io
     end
 
-    style Physical fill:none,stroke:#9ca3af,color:#e0e0e0
-    style VM fill:none,stroke:#9ca3af,color:#e0e0e0
+    style Physical fill:none,stroke:#64748b,color:#334155
+    style VM fill:none,stroke:#64748b,color:#334155

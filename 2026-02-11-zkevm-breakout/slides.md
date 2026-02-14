@@ -2,7 +2,7 @@
 marp: true
 lang: en-US
 title: zkEVM Breakout
-theme: zkevm
+theme: zkevm-dark
 transition: fade
 paginate: true
 _paginate: false

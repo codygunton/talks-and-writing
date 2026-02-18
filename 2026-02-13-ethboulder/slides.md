@@ -119,6 +119,7 @@ Justin Drake tracks these carefully and presents at Ethproofs [calls](https://yo
 - EF Cryptography Team
 - EF EthPandaOps Team
 - EF Robust Incentives Group
+- EF Security Team
 - Grantees
 
 </div>

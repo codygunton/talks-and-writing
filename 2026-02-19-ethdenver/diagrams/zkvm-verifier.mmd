@@ -1,0 +1,15 @@
+%%{init: {"theme": "default", "themeVariables": {"primaryColor": "#eef1f6", "primaryTextColor": "#334155", "lineColor": "#0c9fde", "secondaryColor": "#f5f7fa"}}}%%
+flowchart LR
+    classDef io fill:#eef1f6,stroke:#0c9fde,color:#334155
+    classDef proc fill:#0c9fde,stroke:#0a7bb8,color:#ffffff
+    classDef proof fill:#22c55e,stroke:#16a34a,color:#ffffff
+    classDef result fill:#eef1f6,color:#334155
+
+    subgraph Physical["Physical Machine"]
+            direction LR
+            Inputs["In, Out, Program"]:::io --> ZKV
+            Proof:::proof --> ZKV[zkVM Verifier]:::proc
+            ZKV --> Result["True / False"]:::result
+    end
+
+    style Physical fill:none,stroke:#64748b,color:#334155

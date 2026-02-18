@@ -1,0 +1,11 @@
+{
+  "name": "2026-02-13-ethboulder",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "preview": "./preview.sh"
+  },
+  "devDependencies": {
+    "@marp-team/marp-cli": "^4.2.0"
+  }
+}

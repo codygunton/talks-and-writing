@@ -16,53 +16,31 @@
     'sectionBkgColor2': '#f0f2f5',
     'gridColor': '#e2e8f0',
     'cScale0': '#0c9fde',
-    'cScale1': '#0c9fde',
-    'cScale2': '#0c9fde',
     'cScaleLabel0': '#334155',
-    'cScaleLabel1': '#334155',
-    'cScaleLabel2': '#334155',
     'taskTextColor': '#334155',
     'taskBorderColor': '#0c9fde',
     'todayLineColor': '#0c9fde',
     'fontFamily': 'Inter, sans-serif',
-    'fontSize': '14px'
+    'fontSize': '28px'
   },
-  'themeCSS': '.taskText, .taskTextOutsideRight, .milestoneText { font-family: Merriweather, Georgia, serif !important; }',
-  'gantt': { 'useWidth': 1140, 'rightPadding': 200 }
+  'themeCSS': '.taskText, .taskTextOutsideRight, .milestoneText { font-size: 16px !important; font-family: Merriweather, Georgia, serif !important; }',
+  'gantt': { 'useWidth': 1140, 'rightPadding': 200, 'barHeight': 28, 'barGap': 4 }
 }}%%
 gantt
-    %% NOTE: the dates below are just to establish relative sizes of bars.
-    %% They do not directly correspond to agreed-upon deadlines.
     dateFormat YYYY-MM-DD
     todayMarker off
+    tickInterval 1month
     axisFormat ♦
 
-    section Phase 1
     P1T1꞉ Write down threat model               :p1t1, 2026-02-11, 6w
     P1T2꞉ Agree on launch gating requirements   :p1t2, 2026-02-11, 6w
     P1T3꞉ Reaffirm cryptography requirements    :p1t3, 2026-02-11, 6w
     P1T4꞉ Reaffirm capex requirements           :p1t4, 2026-02-11, 6w
     P1T5꞉ Develop MVP testing baseline          :p1t5, 2026-02-11, 2026-06-01
     P1T6꞉ ZKEVM spec scoping                    :p1t6, 2026-02-11, 2026-06-01
-    P1T7꞉ Soundcalc integration                 :p1t7, 2026-02-11, 2026-03-01
+    P1T7꞉ Soundcalc                             :p1t7, 2026-02-11, 2026-03-01
     P1T8꞉ 100 bits, ≤600KiB proofs, recursion sketch  :p1t8, after p1t7, 2026-06-01
     P1T9꞉ Write down diversity requirements     :p1t9, after p1t2, 2026-06-01
     P1T10꞉ Develop inclusion criteria           :p1t10, after p1t2, 2026-06-01
     P1T11꞉ Validate hardware requirements       :p1t11, after p1t4, 2026-06-01
     Set inclusion criteria and launch blockers   :milestone, 2026-06-01, 0d
-
-    section Phase 2
-    P2T1꞉ Build prover network monitoring       :p2t1, 2026-06-01, 2026-11-01
-    P2T2꞉ Implement testing                     :p2t2, 2026-06-01, 2026-11-01
-    P2T3꞉ Implement test monitoring             :p2t3, 2026-06-01, 2026-11-01
-    P2T4꞉ Reproduce provers                     :p2t4, 2026-06-01, 2026-11-01
-    P2T5꞉ ZKEVM speccing                        :p2t5, 2026-06-01, 2026-11-01
-    P2T6꞉ 128 bits, ≤300KiB proofs, recursion argument :p2t6, 2026-06-01, 2026-11-01
-    Choose ZKEVMs, set k-tuples                  :milestone, 2026-11-01, 0d
-
-    section Phase 3
-    P3T1꞉ Write incident response plans         :p3t1, 2026-11-01, 2026-12-01
-    P3T2꞉ Monitor for stability                 :p3t2, 2026-11-01, 2027-02-01
-    P3T3꞉ Spec Review                           :p3t3, 2026-11-01, 2027-02-01
-    P3T4꞉ Test incident response                :p3t4, 2026-12-01, 2027-02-01
-    Hegotá target                                :milestone, 2027-02-01, 0d

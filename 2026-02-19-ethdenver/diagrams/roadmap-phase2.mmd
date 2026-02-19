@@ -1,0 +1,41 @@
+%%{init: {
+  'theme': 'base',
+  'themeVariables': {
+    'primaryColor': '#eef1f6',
+    'primaryTextColor': '#334155',
+    'primaryBorderColor': '#0c9fde',
+    'secondaryColor': '#f5f7fa',
+    'secondaryTextColor': '#334155',
+    'secondaryBorderColor': '#0a7bb8',
+    'tertiaryColor': '#e8ecf2',
+    'tertiaryTextColor': '#334155',
+    'lineColor': '#0a7bb8',
+    'textColor': '#334155',
+    'mainBkg': '#eef1f6',
+    'sectionBkgColor': '#f0f2f5',
+    'sectionBkgColor2': '#f0f2f5',
+    'gridColor': '#e2e8f0',
+    'cScale0': '#0c9fde',
+    'cScaleLabel0': '#334155',
+    'taskTextColor': '#334155',
+    'taskBorderColor': '#0c9fde',
+    'todayLineColor': '#0c9fde',
+    'fontFamily': 'Inter, sans-serif',
+    'fontSize': '28px'
+  },
+  'themeCSS': '.taskText, .taskTextOutsideRight, .milestoneText { font-size: 16px !important; font-family: Merriweather, Georgia, serif !important; }',
+  'gantt': { 'useWidth': 1140, 'rightPadding': 200, 'barHeight': 28, 'barGap': 4 }
+}}%%
+gantt
+    dateFormat YYYY-MM-DD
+    todayMarker off
+    tickInterval 1month
+    axisFormat ♦
+
+    P2T1꞉ Build prover network monitoring       :p2t1, 2026-06-01, 2026-11-01
+    P2T2꞉ Implement testing                     :p2t2, 2026-06-01, 2026-11-01
+    P2T3꞉ Implement test monitoring             :p2t3, 2026-06-01, 2026-11-01
+    P2T4꞉ Reproduce provers                     :p2t4, 2026-06-01, 2026-11-01
+    P2T5꞉ ZKEVM speccing                        :p2t5, 2026-06-01, 2026-11-01
+    P2T6꞉ 128 bits, ≤300KiB proofs, recursion argument :p2t6, 2026-06-01, 2026-11-01
+    Choose ZKEVMs                  :milestone, 2026-11-01, 0d

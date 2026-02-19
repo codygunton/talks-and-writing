@@ -14,8 +14,9 @@ _paginate: false
 <script src="assets/sparkles-light.js"></script>
 <script type="module" src="assets/mermaid-zkevm-light.js"></script>
 <script src="assets/livereload.js"></script>
+<script src="assets/timer.js"></script>
 
-# Progress on zkEVM Scaling
+# The Road to zkEVM Scaling
 
 https://codygunton.github.io/talks-and-writing/2026-02-19-ethdenver/
 
@@ -25,29 +26,33 @@ https://codygunton.github.io/talks-and-writing/2026-02-19-ethdenver/
 
 ---
 
-# Before & After
-
-DOTHIS: combine this slide and the next one using a two-column layout with the text on the left and the diagrams on the right. The right column should be wider than the left
-
-Before: Re-execution: Every attester receives a block and executes all of the transactions in it to update their copy of the Ethereum state.
-
-After: Every attester receives a block hash and verifies a proof that a state root update is valid.
-
-
-
-
----
-
-# More specific diagrams
-
-<div style="display:flex;justify-content:center;"><div data-mermaid="diagrams/zkvm-prover-riscv.mmd" style="width:60%;"></div></div>
-
-<div style="display:flex;justify-content:center;"><div data-mermaid="diagrams/zkvm-verifier-riscv.mmd" style="width:60%;"></div></div>
+# zkVMs & L1
 
 <div class="no-marker">
 
-* ⚠️ I am not talking about replacing the EVM with a RISC-V machine here ⚠️
+zkVMs create a powerful asymmetry
+  1) A network of low-power nodes (verifiers)
+  2) can check the work of powerful nodes (provers)
+  3) using only a very small amount of data (hashes and proofs)
 
+Our application is Ethereum attesting. 
+
+Right now, attesters re-execute every transaction.
+  1) attesters will be low-power nodes who will verify proofs
+  2) proofs will be produced by computationally powerful provers
+  3) attesters will only need a small amount of data even as we increase throughput
+
+</div>
+
+---
+
+
+# Diagrams
+
+<div style="display:flex;flex-direction:column;align-items:center;flex:1;gap:8px;">
+  <div data-mermaid="diagrams/zkvm-prover-riscv.mmd" style="width:60%;"></div>
+  <div data-mermaid="diagrams/zkvm-verifier-riscv.mmd" style="width:60%;"></div>
+  <p style="margin:4px 0 0;font-size:0.85em;">⚠️ I am not talking about replacing the EVM with a RISC-V machine here ⚠️</p>
 </div>
 
 ---
@@ -70,31 +75,30 @@ Justin Drake tracks these carefully and presents at Ethproofs [calls](https://yo
 
 # How will we ship this? In two phases:
 
- 1. Optional Proofs: checks proofs and also keep re-executing 
-   - Trial period for gathering data, experience, ironing out bugs.
-   - Proofs are not required for the network to function DOTHIS: insert footnote superscipt 1.
-   - Cannot increase the gas limit because of this.
+ 1) **Optional Proofs:** checks proofs and also keep re-executing 
+   * Trial period for gathering data, experience, ironing out bugs.
+   * Proofs are not required<sup>*</sup> for the network to function.
+   * Cannot increase the gas limit because of this.
 
- 2. Mandatory proofs: just re-execute
-   - Proofs disappear ==> network down.
-   - Can increase gas limit because of this.
+ 2) **Mandatory proofs:** just check proofs
+   * Proofs disappear ==> network down.
+   * Can increase gas limit because of this.
 
 ---
 
 
 <img src="images/eip-8025.png" alt="EIP-8025 optional proofs specification" style="width:100%;">
 
-DOTHIS: insert screenshots from https://github.com/ethereum/consensus-specs/tree/master/specs/_features/eip8025
 
 ---
 
-# Who is shipping this?
+# Who will ship this?
 
 <div class="columns" style="align-items:center;">
 <div>
 
-- zkVM teams
-- Ethereum client devs
+- zkVM developers
+- Ethereum client developers
 - EF zkEVM Team
 - Justin Drake and EF Ethproofs Team
 - EF Snarkification Team
@@ -118,16 +122,61 @@ DOTHIS: insert screenshots from https://github.com/ethereum/consensus-specs/tree
 
 # What do the plans look like?
 
-<img src="images/planning-repo.png" alt="eth-act planning repo issues" style="width:100%;">
+
+<img src="images/planning-repo.png" alt="eth-act planning repo issues" style="width:90%;">
 
 ---
 
-<!-- _paginate: false -->
+# Join us on Discord
+
+<img src="images/discord.png" alt="eth-act planning repo issues" style="width:90%;">
+
+---
+
+# Security Roadmap to Optional Proofs
+
+<div style="background:#f0f2f5;border-radius:10px;padding:0.5em;flex:1;display:flex;align-items:center;justify-content:center;"><div data-mermaid="diagrams/roadmap.mmd" style="width:80%;"></div></div>
+
+---
+
+# Phase 1: Set inclusion criteria and launch blockers
+
+<div style="background:#f0f2f5;border-radius:10px;padding:0.5em;flex:1;display:flex;align-items:center;justify-content:center;"><div data-mermaid="diagrams/roadmap-phase1.mmd" style="width:100%;"></div></div>
+
+---
+
+# WIP: Test Monitoring
 <!-- _style: "section { padding: 10px 20px; }" -->
 
-<div data-mermaid="diagrams/roadmap.mmd" style="display:flex;align-items:center;justify-content:center;width:100%;flex:1;"></div>
+<iframe src="https://eth-act.github.io/zkevm-test-monitor/index.html" style="width:100%;flex:1;border:1px solid #e2e8f0;border-radius:6px;"></iframe>
 
-DOTHIS: add three slide sbelow here, one for each of the milestones. Each one should contain a sub-gantt chart of the bigger gantt chart.
+---
+
+# WIP: Starter specs in Python, Markdown and Lean
+<!-- _style: "section { padding: 10px 20px; }" -->
+
+<div style="display:flex;gap:16px;flex:1;align-items:stretch;">
+  <div style="flex:1;display:flex;flex-direction:column;gap:6px;">
+    <iframe src="https://codygunton.github.io/pil2-proofman/part-stark/full-protocol.html" style="width:100%;flex:1;border:1px solid #e2e8f0;border-radius:6px;"></iframe>
+  </div>
+  <div style="flex:1;display:flex;flex-direction:column;gap:6px;align-items:center;">
+    <img src="images/lean-spec.png" alt="ZisK Lean specification code" style="width:100%;object-fit:contain;flex:1;">
+  </div>
+</div>
+
+---
+
+# Phase 2: Choose zkEVMs
+
+<div style="background:#f0f2f5;border-radius:10px;padding:0.5em;flex:1;display:flex;align-items:center;justify-content:center;"><div data-mermaid="diagrams/roadmap-phase2.mmd" style="width:100%;"></div></div>
+
+---
+
+# Phase 3: Launch @ Hegotá target
+
+<div style="background:#f0f2f5;border-radius:10px;padding:0.5em;flex:1;display:flex;align-items:center;justify-content:center;"><div data-mermaid="diagrams/roadmap-phase3.mmd" style="width:100%;"></div></div>
+
+---
 
 # References
 

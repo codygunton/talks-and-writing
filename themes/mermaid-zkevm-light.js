@@ -32,27 +32,30 @@ document.querySelectorAll('[data-mermaid]').forEach(async function(el, i) {
       '.task { fill: #0c9fde !important; stroke: #0c9fde !important; opacity: 1 !important; }\n';
   }
 
-  // — Post-processing: position labels outside bars —
+  // — Post-processing: position labels outside bars (master chart only) —
+  var isMasterChart = src.match(/roadmap\.mmd$/);
   var bars = el.querySelectorAll('svg rect.task');
   el.querySelectorAll('svg text.taskText, svg text.taskTextOutsideRight, svg text.taskTextOutsideLeft').forEach(function(txt) {
-    var ty = parseFloat(txt.getAttribute('y'));
-    var matched = null;
-    bars.forEach(function(r) {
-      var ry = parseFloat(r.getAttribute('y')) + parseFloat(r.getAttribute('height')) / 2;
-      if (Math.abs(ry - ty) < 5) matched = r;
-    });
-    if (matched) {
-      var isP3 = txt.textContent.match(/^P3T/);
-      if (isP3) {
-        var leftEdge = parseFloat(matched.getAttribute('x'));
-        txt.setAttribute('x', leftEdge - 6);
-        txt.setAttribute('text-anchor', 'end');
-        txt.setAttribute('class', 'taskTextOutsideLeft');
-      } else {
-        var rightEdge = parseFloat(matched.getAttribute('x')) + parseFloat(matched.getAttribute('width'));
-        txt.setAttribute('x', rightEdge + 6);
-        txt.setAttribute('text-anchor', 'start');
-        txt.setAttribute('class', 'taskTextOutsideRight');
+    if (isMasterChart) {
+      var ty = parseFloat(txt.getAttribute('y'));
+      var matched = null;
+      bars.forEach(function(r) {
+        var ry = parseFloat(r.getAttribute('y')) + parseFloat(r.getAttribute('height')) / 2;
+        if (Math.abs(ry - ty) < 5) matched = r;
+      });
+      if (matched) {
+        var isP3 = txt.textContent.match(/^P3T/);
+        if (isP3) {
+          var leftEdge = parseFloat(matched.getAttribute('x'));
+          txt.setAttribute('x', leftEdge - 6);
+          txt.setAttribute('text-anchor', 'end');
+          txt.setAttribute('class', 'taskTextOutsideLeft');
+        } else {
+          var rightEdge = parseFloat(matched.getAttribute('x')) + parseFloat(matched.getAttribute('width'));
+          txt.setAttribute('x', rightEdge + 6);
+          txt.setAttribute('text-anchor', 'start');
+          txt.setAttribute('class', 'taskTextOutsideRight');
+        }
       }
     }
     // Bold PxTy prefix

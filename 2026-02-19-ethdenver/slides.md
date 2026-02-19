@@ -145,14 +145,15 @@ Justin Drake tracks these carefully and presents at Ethproofs [calls](https://yo
 
 ---
 
-# WIP: Test Monitoring
+
+# WIP: [Test Monitoring](https://eth-act.github.io/zkevm-test-monitor/index.html)
 <!-- _style: "section { padding: 10px 20px; }" -->
 
 <iframe src="https://eth-act.github.io/zkevm-test-monitor/index.html" style="width:100%;flex:1;border:1px solid #e2e8f0;border-radius:6px;"></iframe>
 
 ---
 
-# WIP: Starter specs in Python, Markdown and Lean
+# WIP: Starter Specs in [Python, Lean](https://github.com/codygunton/pil2-proofman/tree/executable-specs) and [Markdown](https://codygunton.github.io/pil2-proofman/part-stark/full-protocol.html)
 <!-- _style: "section { padding: 10px 20px; }" -->
 
 <div style="display:flex;gap:16px;flex:1;align-items:stretch;">

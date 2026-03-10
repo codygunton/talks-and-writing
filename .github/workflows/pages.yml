@@ -45,6 +45,7 @@ jobs:
             "2026-02-11-zkevm-breakout"
             "2026-02-13-ethboulder"
             "2026-02-19-ethdenver"
+            "2026-03-11-zkevm-breakout"
           )
 
           # Find the commit of the last successful deploy (from cache key)
@@ -97,6 +98,7 @@ jobs:
               <li><a href="2026-02-11-zkevm-breakout/">zkEVM Breakout (Feb 2026)</a></li>
               <li><a href="2026-02-13-ethboulder/">ETH Boulder (Feb 2026)</a></li>
               <li><a href="2026-02-19-ethdenver/">ETH Denver (Feb 2026)</a></li>
+              <li><a href="2026-03-11-zkevm-breakout/">zkEVM Breakout (Mar 2026)</a></li>
             </ul>
           </body>
           </html>

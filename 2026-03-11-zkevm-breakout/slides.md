@@ -30,12 +30,15 @@ https://codygunton.github.io/talks-and-writing/2026-03-11-zkevm-breakout/
 
 # Testing
 
-Significant improvements to the official RISC-V Architecture Tests https://github.com/riscv/riscv-arch-test
- - RISOCF framework, more invasive to implement, is no more.
+<img src="assets/act4.webp" alt="ACT4 test monitor" style="width:100%;border-radius:6px;">
+
+Improvements to https://github.com/riscv/riscv-arch-test
+ - RISCOF framework, more invasive to implement, is no more.
  - New tests!
  - Commitment to more legible release schedule
 
-Currently working to update https://eth-act.github.io/zkevm-test-monitor/
+TODO: update https://eth-act.github.io/zkevm-test-monitor/
+
 
 ---
 
@@ -81,7 +84,7 @@ My opinions
  * If you want specs to be maintainable they need to be executable.
  * Even though we use non-interactive protocols you can't understand just the verifier in isolation.
  * Verifiers are less optimized than provers, hence more readable.
- * A Lean implementation is not as interesting since we really want to prove statements about the extracted code. ArkLib specs will come later
+ * A Lean implementation is not as interesting since we really want to prove statements about the extracted code. ArkLib specs will come later.
 
 ---
 

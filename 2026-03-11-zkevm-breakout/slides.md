@@ -16,7 +16,7 @@ _paginate: false
 <script src="assets/livereload.js"></script>
 <script src="assets/timer.js"></script>
 
-# zkEVM Breakout
+# Update on Project 7: Security
 
 Cody Gunton - March 11, 2026
 
@@ -28,63 +28,43 @@ https://codygunton.github.io/talks-and-writing/2026-03-11-zkevm-breakout/
 
 --- 
 
-# Testing
+# RISC-V Compliance Testing
 
 <img src="assets/act4.webp" alt="ACT4 test monitor" style="width:100%;border-radius:6px;">
 
-Improvements to https://github.com/riscv/riscv-arch-test
+There are recent improvements to https://github.com/riscv/riscv-arch-test
  - RISCOF framework, more invasive to implement, is no more.
  - New tests!
- - Commitment to more legible release schedule
+ - Commitment to more legible release schedule.
 
 TODO: update https://eth-act.github.io/zkevm-test-monitor/
 
 
 ---
 
-# Formal Verification
+# Soundcalc
 
-Goals of [verified-zkevm.org](https://verified-zkevm.org/):
-1) A RISC-V implementation matches the Sail spec
-    * Progress on SP1 and OpenVM by Nethermind with caveats
-2) An EVM implementation matches a formal spec
-3) A verifier matches an ArkLib spec that is proven secure
 
+What it is: a Python tool to calculate number of bits of security.
+
+Five zkVMs integrated by requested deadline 
+https://github.com/ethereum/soundcalc/blob/main/reports/summary.md
+
+Thanks to the teams behind: Airbender, OpenVM, Pico, SP1, ZisK
 
 ---
 
-# Formal Verification gives us...?
+# What does formal verification give us...?
 
 <iframe src="https://eprint.iacr.org/2026/192" style="width:100%;flex:1;border:1px solid #e2e8f0;border-radius:6px;"></iframe>
 
 ---
 
-# Specifications
+# SNARK Specifications
 
 https://codygunton.github.io/pil2-proofman/: Markdown guide to the Python implementation, the latter being the proposed starter.
 
 <iframe src="https://codygunton.github.io/pil2-proofman/" style="width:100%;flex:1;border:1px solid #e2e8f0;border-radius:6px;"></iframe>
-
----
-
-# Specs: What do we want?
-
-Result of some conversations
-
-* Main utility: specs are for auditors.
-* Specs should show optimizations not in papers.
-* A hard part: continuations
-* ZKVM verifiers are blackbox dependencies.
-* We need to understand what these things are doing... but maybe only the verifier.
-
----
-
-# Specs: What do we want?
-My opinions
- * If you want specs to be maintainable they need to be executable.
- * Even though we use non-interactive protocols you can't understand just the verifier in isolation.
- * Verifiers are less optimized than provers, hence more readable.
- * A Lean implementation is not as interesting since we really want to prove statements about the extracted code. ArkLib specs will come later.
 
 ---
 

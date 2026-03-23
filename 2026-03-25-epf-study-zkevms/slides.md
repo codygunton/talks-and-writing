@@ -283,13 +283,6 @@ https://zkevm.ethereum.foundation/blog/repricings-for-block-proving-part-2
 | Prover killers impact | Builder can avoid them | Can't avoid IL-txs impact |
 | Forced gas | 0 gas | 1 IL × 40 txs × 17M = 680 Mgas |
 
-**Workaround?:** limit how much gas FOCIL can force into a block
-
-- **Pro:** Impact of mispriced opcodes is bounded; repricing factor decreases
-- **Con:** Censorship resistance guarantee is downgraded; non-sophisticated builders life is harder
-
-**Full solution:** proper repricing
-
 ---
 
 # Benchmarks & repricing

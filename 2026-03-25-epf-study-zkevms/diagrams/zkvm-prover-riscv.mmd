@@ -1,0 +1,21 @@
+%%{init: {"theme": "default", "themeVariables": {"primaryColor": "#eef1f6", "primaryTextColor": "#334155", "lineColor": "#0c9fde", "secondaryColor": "#f5f7fa"}}}%%
+flowchart LR
+    classDef io fill:#eef1f6,stroke:#0c9fde,color:#334155
+    classDef proc fill:#0c9fde,stroke:#0a7bb8,color:#ffffff
+    classDef proof fill:#22c55e,stroke:#16a34a,color:#ffffff
+
+    subgraph Physical["Prover Machine"]
+    direction LR
+        In["block, pre-state"]:::io --> Program["EVM implementation"]:::proc
+        subgraph Prover["zkVM Prover"]
+            subgraph VM["RISC-V VM"]
+                Program
+            end
+        end
+        Program --> Out["post-state"]:::io
+        Prover --> Proof:::proof
+    end
+
+    style Physical fill:none,stroke:#64748b,color:#334155
+    style Prover fill:none,stroke:#0c9fde,color:#334155
+    style VM fill:none,stroke:#64748b,color:#334155

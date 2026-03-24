@@ -38,8 +38,8 @@ https://codygunton.github.io/talks-and-writing/2026-03-25-epf-study-zkevms/
 
  1. Why do we want zkEVMs? (The scaling problem)
  2. What is a SNARK? (Concepts and history)
- 3. Ethereum guests (Ignacio)
- 4. Protocol changes (Ignacio)
+ 3. Ethereum guests (Understand what are we proving)
+ 4. Protocol changes (Adapting Ethereum for proofs)
 
 ---
 

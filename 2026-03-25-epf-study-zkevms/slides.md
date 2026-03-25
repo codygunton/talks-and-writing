@@ -620,11 +620,11 @@ https://eips.ethereum.org/EIPS/eip-7928
 
 <div style="font-size:0.6em;">
 
-* [First SNARK content at an Ethereum venue](https://blog.ethereum.org/2016/12/05/zksnarks-in-a-nutshell)
-* [First ethresear.ch post that mentions ZK](https://ethresear.ch/t/accumulators-scalability-of-utxo-blockchains-and-data-availability/176)
-* [Early talk: SNARKs for mixing, signaling and scaling — Barry WhiteHat](https://youtu.be/lv6iK9qezBY?si=iWXDOSfVfYDE2eYC)
-* [Lambda Class: history of ZK proofs](https://blog.lambdaclass.com/our-highly-subjective-view-on-the-history-of-zero-knowledge-proofs/)
-* [Matt Faulkner: evolution of SNARKs](https://mfaulk.github.io/2024/10/28/evolution-of-snarks.html)
+- [First SNARK content at an Ethereum venue](https://blog.ethereum.org/2016/12/05/zksnarks-in-a-nutshell)
+- [First ethresear.ch post that mentions ZK](https://ethresear.ch/t/accumulators-scalability-of-utxo-blockchains-and-data-availability/176)
+- [Early talk: SNARKs for mixing, signaling and scaling — Barry WhiteHat](https://youtu.be/lv6iK9qezBY?si=iWXDOSfVfYDE2eYC)
+- [Lambda Class: history of ZK proofs](https://blog.lambdaclass.com/our-highly-subjective-view-on-the-history-of-zero-knowledge-proofs/)
+- [Matt Faulkner: evolution of SNARKs](https://mfaulk.github.io/2024/10/28/evolution-of-snarks.html)
 
 </div>
 

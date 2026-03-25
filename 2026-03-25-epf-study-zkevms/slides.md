@@ -45,94 +45,68 @@ https://codygunton.github.io/talks-and-writing/2026-03-25-epf-study-zkevms/
 
 # Goal of introducing zkEVMs
 
-Allow the EVM to execute more compute per block while keeping the work done by the consensus network small to preserve censorship resistance.
+<div style="flex:1;display:flex;align-items:center;justify-content:center;">
+
+Allow the EVM to execute more compute per block while keeping the work done by the consensus network small to preserve decentralization.
+
+</div>
 
 ---
 
 # Attester Requirements Today
 
-An attester must re-execute every transaction and attest **within ~4s of slot start**.
+An attester must re-execute every transaction. As blocks get bigger, this time pressure is the bottleneck.
 
- * **CPU:** 8 cores / 16 threads (PassMark: ~3500 ST, ~25000 MT)
- * **RAM:** 64 GB
- * **Storage:** 4 TB NVMe (500 MB/s seq, 50K read IOPS)
- * **Bandwidth:** 50 Mbps down / 25 Mbps up
- * As blocks get bigger, this time pressure is the bottleneck
-
-See: [EIP-7870](https://eips.ethereum.org/EIPS/eip-7870)
+<iframe src="https://eips.ethereum.org/EIPS/eip-7870#specification" style="width:100%;flex:1;border:1px solid #e2e8f0;border-radius:6px;"></iframe>
 
 ---
 
 # The Scaling Problem
 
 If we allow more transactions in a block, eventually we exhaust the following attester resources:
- * bandwidth: the transactions don't arrive in time
- * compute: the transactions can't be processed quickly enough
- * state: the amount of storage used grows faster
-   * solutions to the problem of state growth are needed sooner
-
-State DB expected to degrade past ~650 GiB; at 60M gas that's ~349 MiB/day growth.
-
-See: [EIP-8037: State Creation Gas Cost Increase](https://eips.ethereum.org/EIPS/eip-8037) (co-authored by CPerezz), [EIP-8032: Size-Based Storage Gas Pricing](https://eips.ethereum.org/EIPS/eip-8032)
+  * bandwidth: the transactions don't arrive in time
+  * compute: the transactions can't be processed quickly enough
+  * state: the amount of storage used grows faster 
 
 ---
 
-# Block Size and Proof Size
-
-* Average Ethereum block: **~100 KB**; max possible: **~7 MB** (calldata-heavy)
-  * See: [etherscan.io/chart/blocksize](https://etherscan.io/chart/blocksize), [EIP-7623](https://eips.ethereum.org/EIPS/eip-7623)
-* As gas limit increases, blocks get bigger — more data for attesters to download and process
-* A SNARK proof: **≤300 KB** regardless of block size
-  * Fixed-size proof replaces variable-size re-execution — this is the asymmetry
-
----
-
-# ZKVM Prover-Verifier Asymmetry
+# How SNARKs Help
 
 <div class="no-marker">
 
-zkVMs create a powerful asymmetry:
-  1) A network of low-power nodes (verifiers)
-  2) can check the work of powerful nodes (provers)
-  3) using only a very small amount of data (hashes and proofs)
+* zkVMs create an asymmetry:
+  * A network of low-power nodes (verifiers)
+  * can check the work of powerful nodes (provers)
+  * using only a very small amount of data (hashes and proofs)
 
-Our application is Ethereum attesting.
-
-Right now, attesters re-execute every transaction.
-  1) attesters will be low-power nodes who will verify proofs
-  2) proofs will be produced by computationally powerful provers
-  3) attesters will only need a small amount of data even as we increase throughput
+* In our application:
+  * attesters will be low-power nodes who will verify proofs
+  * proofs will be produced by computationally powerful provers
+  * attesters will only need a small amount of data even as we increase throughput
 
 </div>
 
 ---
 
-# Optional vs Mandatory Proofs
+# Block Size and Proof Size
 
-<!-- NOTE: we might remove this slide — may be too much detail for the intro section -->
+<div class="no-marker">
 
- 1) **Optional Proofs:** checks proofs and also keeps re-executing
-   * Trial period for gathering data, experience, ironing out bugs.
-   * Proofs are not required for the network to function.
-   * Cannot increase the gas limit because of this.
+* Without ZKEVM proofs:
+  * Average: [currently ~175 KB](https://etherscan.io/chart/blocksize); max ~**1.26 MB** adversarial ([EIP-7623](https://eips.ethereum.org/EIPS/eip-7623))
+  * Higher gas limit => blocks get bigger, i.e., more data for attesters to receive
 
- 2) **Mandatory proofs:** just check proofs
-   * Proofs disappear ==> network down.
-   * Can increase gas limit because of this.
+* With ZKEVM proofs: 
+  * **≤300 KB**, insensitive to block size
+  * Fixed-size proof replaces variable-size re-execution — this is the asymmetry
+
+</div>
 
 ---
 
-# The Space Race
+# Optional Proofs and Mandatory Proofs
 
-When I entered the space in 2021, I was told that zkEVMs were a pipe dream.
-
-The possibility of proving Ethereum execution led to huge investment in ZK tech that rapidly advanced the field.
-
-<!-- fragment: heading + first line show, then "Now" + iframe reveal together -->
-
-* Now we're there™
-
-<iframe src="https://ethproofs.org/" style="width:100%;flex:1;border:1px solid #e2e8f0;border-radius:6px;"></iframe>
+<iframe src="https://strawmap.org" style="width:100%;flex:1;border:1px solid #e2e8f0;border-radius:6px;"></iframe>
 
 ---
 
@@ -162,24 +136,25 @@ The possibility of proving Ethereum execution led to huge investment in ZK tech 
 
 ---
 
-# How It Started
+# History on one slide
 
-<!-- See Justin Thaler's "Proofs, Arguments, and Zero-Knowledge" for a thorough treatment -->
 
- * **1985** -- Goldwasser, Micali, Rackoff define zero-knowledge proofs
- * **1992** -- Sumcheck protocol (Lund, Fortnow, Karloff, Nisan)
- * **2008-2010** -- Groth's pairing-based SNARK work; KZG polynomial commitments (Kate, Zaverucha, Goldberg)
- * **2013** -- Pinocchio: first nearly-practical zk-SNARK for general computation
- * **2014** -- [Zerocash paper](https://eprint.iacr.org/2014/349) (Ben-Sasson, Chiesa et al.)
- * **2016** -- Zcash Sprout launches with BCTV14 (a Pinocchio variant); **2018** -- Sapling upgrade switches to Groth16
- * **2018-now** -- FRI & STARKs (Ben-Sasson et al.), PLONK (Gabizon, Williamson, Ciobotaru)
- * **2020-now -- Now** Cairo/StarkWare (2020) → RISC Zero (2021, first RISC-V zkVM) → Polygon zkEVM & zkSync Era (2023, first zkEVM mainnets)
+ * **1985** -- [Goldwasser, Micali, Rackoff](https://people.csail.mit.edu/silvio/Selected%20Scientific%20Papers/Proof%20Systems/The_Knowledge_Complexity_Of_Interactive_Proof_Systems.pdf) define zero-knowledge proofs
+ * **1992** -- [Sumcheck protocol](https://dl.acm.org/doi/10.1145/146585.146605)
+ * **2008-2010** -- Innovations by Groth [1](https://eprint.iacr.org/2009/390), [2](https://eprint.iacr.org/2016/260); [KZG](https://www.iacr.org/archive/asiacrypt2010/6477178/6477178.pdf) polynomial commitment scheme
+ * **2013-2014** -- [Pinocchio](https://eprint.iacr.org/2013/279); [Zerocash paper](https://eprint.iacr.org/2014/349)
+ * **2016** -- Zcash [launches](https://web.archive.org/web/20251213135521if_/https://electriccoin.co/blog/zcash-sprout-launch/); early discussion of using ZK in Ethereum (see [references](#references-how-it-started))
+ * **2018-now** -- [FRI](https://eccc.weizmann.ac.il/report/2017/134/) & [STARKs](https://eprint.iacr.org/2018/046); [PLONK](https://eprint.iacr.org/2019/953)
+ * **2020+** -- [StarkWare](https://starkware.co/); [Polygon zkEVM](https://polygon.technology/blog/polygon-zkevm-mainnet-beta-is-live) & [zkSync Era](https://blog.matter-labs.io/gm-zkevm-171b12a26b36) L2s; [RISC Zero](https://dev.risczero.com/proof-system-in-detail.pdf)
 
-https://youtu.be/lv6iK9qezBY?si=iWXDOSfVfYDE2eYC
-https://blog.lambdaclass.com/our-highly-subjective-view-on-the-history-of-zero-knowledge-proofs/
-https://mfaulk.github.io/2024/10/28/evolution-of-snarks.html
-https://ethresear.ch/t/accumulators-scalability-of-utxo-blockchains-and-data-availability/176
-https://blog.ethereum.org/2016/12/05/zksnarks-in-a-nutshell
+
+---
+
+# I Was Told Real-Time Proving Is Impossible in 2021
+
+Now we're there™
+
+<iframe src="https://ethproofs.org/" style="width:100%;flex:1;border:1px solid #e2e8f0;border-radius:6px;"></iframe>
 
 ---
 
@@ -202,105 +177,102 @@ https://blog.ethereum.org/2016/12/05/zksnarks-in-a-nutshell
 
 # Non-interactive Proof System
 
-Goal: avoid P and V having to communicate over a network;
+<div class="no-marker">
 
-Solution: P uses an out-of-control function (hash function) to produce challenge values rather than asking V for random values.
+* Goal: avoid P and V having to communicate over a network.
+* Solution: P uses an out-of-control function (hash function) to produce challenge values rather than asking V for random values.
 
 <!-- TODO: add a different illustration here, not a table — will describe later -->
+
+</div>
 
 ---
 
 # Skeleton of a SNARK: The Program
 
-P and V agree on the computation -- what does that mean?
+<div class="no-marker">
 
-Proof systems argue about computations given in special, low-level languages describing **arithmetic circuits**.
- * Traditional paradigm: everything is built up from logical operations like AND, NOT, OR, XOR, etc. 
- * Arithmetic circuits: everything is built up from arithmetic operations like +, *, -.
+* "P and V agree on the computation" -- what does that mean?
+* Proof systems argue about computations given in special, low-level languages describing **arithmetic circuits**.
+  * Traditional paradigm: everything is built up from logical operations like AND, NOT, OR, XOR, etc.
+  * Arithmetic circuits: everything is built up from arithmetic operations like +, *, -.
+* There exist special languages for writing programs for SNARKs
+  * e.g.: circom, Noir, Cairo, gnark
+  * tooling is improving but rough; fragmented ecosystems
 
-There exist special language for writing programs for SNARKS
- * e.g.: circom, Cairo, Noir, gnark
- * tooling is very fragmented (more on this :wink:)
-
----
-
-# Skeleton of a SNARK: Proving
-
-1) **witness generation**: execute the program, saving all intermediate values in a "witness", a collection of polynomials
-2) **commitment computation**: create a binding fingerprint of the witness data using a polynomial commitment scheme
-3) **reduction**: reduce checking the logic of each step in the computation is valid to check that logic "at a random point" is valid
-4) **spot checking**: check the logic "at a random point" is valid
-5) **PCS opening**: use the commitments to argue that the "random points" came from the witness
+</div>
 
 ---
 
 # Skeleton of a SNARK: Proving
 
-1. **witness generation**: expensive serial bottleneck; returns polynomials (univariate or multilinear)
-2. **commitment computation**: FRI-based or WHIR-based; KZG; Hyrax 
-3. **reduction**: quotient argument; sumcheck
-4. **spot checking**: evaluate the constraints at a random evaluation of the witnesses
-5. **PCS opening**: checking Merkle proofs and FRI folding steps; computing an elliptic curve pairing.
+<div class="no-marker">
+
+* **trace generation**: execute the program, saving all intermediate values in an "execution trace", a collection of polynomials
+* **commitment computation**: create a binding fingerprint of the trace data using a polynomial commitment scheme
+* **reduction**: reduce checking the logic of each step in the computation is valid to check that logic "at a random point" is valid
+* **spot checking**: check the logic "at a random point" is valid
+* **PCS opening**: use the commitments to argue that the "random points" came from the execution trace that was committed before
+
+</div>
+
+---
+
+# Skeleton of a SNARK: Proving
+
+<div class="no-marker">
+
+* **trace generation**: expensive serial bottleneck; returns polynomials (univariate or multilinear)
+* **commitment computation**: FRI-based or WHIR-based; KZG; Hyrax
+* **reduction**: quotient argument; sumcheck
+* **spot checking**: evaluate the constraints at a random evaluation of the trace polynomials
+* **PCS opening**: check Merkle proofs and FRI folding steps; elliptic curve pairing.
+
+</div>
 
 ---
 
 # Putting This Into Practice: Generalities
 
-Different applications have different requirements. Design space:
+<div class="no-marker">
 
-- How do we write programs for proving them?
-- Does the application need privacy?
-- Where will the program be proven?
-  - Memory constraints?
-  - Compute constraints?
-- Where will the program be verified?
-  - Bandwidth constraints on proof size?
+* Different applications have different requirements. Design space:
+  * How do we write programs for proving them?
+  * Does the application need privacy?
+  * Where will the program be proven? (Memory constraints? Compute constraints?)
+  * Where will the program be verified? (Bandwidth constraints on proof size?)
+
+</div>
 
 ---
 
 # Putting This Into Practice: ZKVMs
 
-Goal: 
- - allow developers to write programs using normal programming languages such as Rust or C++ or Go or Java.
- - unlock robust, maintainable systems
- - rely on widely used compiler infrastructure
+<div class="no-marker">
 
-Reality: 
- - huge success overall for Ethereum applications
- - only Rust and C++ work well and programmers still have to "target zk"
- - Go support is improving significantly in recent weeks
+* Goal:
+  * allow developers to write programs using normal programming languages such as Rust or C++ or Go or Java.
+  * unlock robust, maintainable systems
+  * rely on widely used compiler infrastructure
+
+* Reality:
+  * VM overhead is real but tolerable; huge success overall for Ethereum applications
+  * only Rust and C++ work well and programmers still have to "target zk"
+  * Go support is improving significantly in recent weeks
+
+</div>
 
 
 ---
 
 # zkEVM = zkVM + Guest Program
 
-There are many candidate zkVMs and many candidate "guest programs" (i.e., the transaction-checking programs that need to be proved).
-
-A **zkEVM** is what you get when you run an Ethereum execution client as a guest program inside a zkVM.
-
----
-
-# RISC-V
-
-Computers have different architectures. Common ones are x86_64 and ARM. Open standard gaining traction: RISC-V.
+Cartoon picture to be further developed:
 
 <div style="display:flex;flex-direction:column;align-items:center;flex:1;gap:8px;">
   <div data-mermaid="diagrams/zkvm-prover-riscv.mmd" style="width:60%;"></div>
   <div data-mermaid="diagrams/zkvm-verifier-riscv.mmd" style="width:60%;"></div>
-  <p style="margin:4px 0 0;font-size:0.85em;">⚠️ I am not talking about replacing the EVM with a RISC-V machine here ⚠️</p>
 </div>
-
-
----
-
-# Show the picture again
-
-<!-- What is recursion in this context and why does it matter -->
-
----
-
-<!-- Placeholder for Introduction and ZKVMs sections (Cody's slides go here) -->
 
 ---
 
@@ -637,10 +609,26 @@ https://eips.ethereum.org/EIPS/eip-7928
 # Get Involved
 
 * **Ethproofs calls & events:** [youtube.com/playlist](https://youtube.com/playlist?list=PLJqWcTqh_zKGthi2bQDVOcNWXCSvH1sgB) — including **Beast Mode** this week
-* **zkEVM team calls:** coordination on guest programs, zkVM integration, and protocol changes
+* **zkEVM team calls:** coordination on guest programs, zkVM integration, and protocol changes; to join, find the relevant planing issue; [example here](https://github.com/ethereum/pm/issues/1900)
 
 ---
 
+
+<!-- _paginate: false -->
+
+# References
+
+<div style="font-size:0.6em;">
+
+* [First SNARK content at an Ethereum venue](https://blog.ethereum.org/2016/12/05/zksnarks-in-a-nutshell)
+* [First ethresear.ch post that mentions ZK](https://ethresear.ch/t/accumulators-scalability-of-utxo-blockchains-and-data-availability/176)
+* [Early talk: SNARKs for mixing, signaling and scaling — Barry WhiteHat](https://youtu.be/lv6iK9qezBY?si=iWXDOSfVfYDE2eYC)
+* [Lambda Class: history of ZK proofs](https://blog.lambdaclass.com/our-highly-subjective-view-on-the-history-of-zero-knowledge-proofs/)
+* [Matt Faulkner: evolution of SNARKs](https://mfaulk.github.io/2024/10/28/evolution-of-snarks.html)
+
+</div>
+
+---
 # Thanks for your attention!
 <!-- _class: lead -->
 <!-- _paginate: false -->

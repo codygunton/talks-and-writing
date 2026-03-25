@@ -38,7 +38,7 @@ https://codygunton.github.io/talks-and-writing/2026-03-25-epf-study-zkevms/
 
  1. Why do we want zkEVMs? (The scaling problem)
  2. What is a SNARK? (Concepts and history)
- 3. Ethereum guests (Understand what are we proving)
+ 3. Ethereum guests (Understand what we are proving)
  4. Protocol changes (Adapting Ethereum for proofs)
 
 ---
@@ -97,7 +97,7 @@ If we allow more transactions in a block, eventually we exhaust the following at
   * Higher gas limit => blocks get bigger, i.e., more data for attesters to receive
 
 * With ZKEVM proofs: 
-  * **≤300 KB**, insensitive to block size
+  * **≤300 KB**, insensitive to block size and configurable at a cost
   * Fixed-size proof replaces variable-size re-execution — this is the asymmetry
 
 </div>
@@ -226,7 +226,7 @@ Now we're there™
 * **commitment computation**: FRI-based or WHIR-based; KZG; Hyrax
 * **reduction**: quotient argument; sumcheck
 * **spot checking**: evaluate the constraints at a random evaluation of the trace polynomials
-* **PCS opening**: check Merkle proofs and FRI folding steps; elliptic curve pairing.
+* **PCS opening**: check Merkle proofs and FRI folding steps; elliptic curve pairing
 
 </div>
 
@@ -251,13 +251,13 @@ Now we're there™
 <div class="no-marker">
 
 * Goal:
-  * allow developers to write programs using normal programming languages such as Rust or C++ or Go or Java.
-  * unlock robust, maintainable systems
-  * rely on widely used compiler infrastructure
+  * Allow developers to write programs using normal programming languages such as Rust or C++ or Go or Java
+  * Unlock robust, maintainable systems
+  * Rely on widely used compiler infrastructure
 
 * Reality:
   * VM overhead is real but tolerable; huge success overall for Ethereum applications
-  * only Rust and C++ work well and programmers still have to "target zk"
+  * Only Rust and C++ work well and programmers still have to "target zk"
   * Go support is improving significantly in recent weeks
 
 </div>

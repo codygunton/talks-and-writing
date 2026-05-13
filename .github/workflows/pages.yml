@@ -48,6 +48,7 @@ jobs:
             "2026-03-11-zkevm-breakout"
             "2026-03-25-epf-study-zkevms"
             "2026-04-08-zkevm-breakout"
+            "2026-05-13-zkevm-breakout"
           )
 
           # Find the commit of the last successful deploy (from cache key)
@@ -103,6 +104,7 @@ jobs:
               <li><a href="2026-03-11-zkevm-breakout/">zkEVM Breakout (Mar 2026)</a></li>
               <li><a href="2026-03-25-epf-study-zkevms/">EPF Study: zkEVMs (Mar 2026)</a></li>
               <li><a href="2026-04-08-zkevm-breakout/">zkEVM Breakout (Apr 2026)</a></li>
+              <li><a href="2026-05-13-zkevm-breakout/">zkEVM Breakout (May 2026)</a></li>
             </ul>
           </body>
           </html>

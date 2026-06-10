@@ -28,20 +28,21 @@ https://codygunton.github.io/talks-and-writing/2026-05-13-zkevm-breakout/
 
 ---
 
-# Fuzzing findings
+# SP1 Formal Verification Blog Post 
 
-An EF grantee has found six bugs across three different zkVMs by fuzzing. 
+Published https://zkevm.ethereum.foundation/blog/sp1-fv
 
-Some patches have been upstreamed.
-
-Expect a report this Summer.
+Highlights:
+ - Lean4 model of SP1 Hypecube modeled a bug in a core control flow circuit JALR
+ - Found accidental inclusion of contradictory hypotheses in Lean4 proof of SLTI (no bug in circuit)
+ - Conclusion: 
 
 ---
 
-# ZisK RISC-V Formal Verification RFC
+# ZisK RISC-V Formal Verification
 
-Taking https://github.com/openvm-org/openvm-fv as a blueprint, I have an initial draft of https://github.com/eth-act/zisk-fv giving formal verification of ZisK's RISC-V circuit.
-  * Expect ready for external review in <2 weeks
+https://github.com/eth-act/zisk-fv nearing completion
+ - 
 
 ---
 

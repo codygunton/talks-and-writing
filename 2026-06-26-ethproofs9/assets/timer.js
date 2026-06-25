@@ -1,5 +1,5 @@
 (function() {
-  var DURATION = 3 * 60;
+  var DURATION = 2 * 60;
   var remaining = DURATION;
   var interval = null;
   var running = false;
@@ -52,9 +52,9 @@
 
   function render() {
     display.textContent = fmt(remaining);
-    if (remaining <= 60) {
+    if (remaining <= 30) {
       display.style.color = '#ff5f5f';
-    } else if (remaining <= 3 * 60) {
+    } else if (remaining <= 60) {
       display.style.color = '#ffcc44';
     } else {
       display.style.color = '#fff';

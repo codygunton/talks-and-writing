@@ -27,8 +27,34 @@ https://codygunton.github.io/talks-and-writing/2026-06-26-ethproofs9/
 
 ---
 
-# github.com/eth-act/zisk-fv/
-Nethermind and friends: sp1-fv, openvm-fv, zisk-fv
+# ZisK v0.17.0 RISC-V Compliance Verification (WIP)
+
+Nethermind and friends: sp1-fv, openvm-fv, pico-fv
+
+My work: [github.com/eth-act/zisk-fv/](github.com/eth-act/zisk-fv/).
+
+Goals:
+ * Soundness: every RISC-V state transition accepted by ZisK is spec-valid
+ * Completeness: ZisK can process every spec-valid instruction
+ * Reproducibilty via nix and reasonable CI profile
+ * Use standard tools like [aeneas](https://github.com/AeneasVerif/aeneas) and [clean](https://github.com/Verified-zkEVM/clean)
+ * Make the verification boundary and claim as explicit as possible
+ * Strong testing to cover verification gaps
+
+
+---
+
+# Status and Path Forward
+Approach: build e2e with axioms, remove axioms, profit (bugs).
+ * Good progress on soundness
+ * Found three bugs in ZisK, one they already patched, two novel (now patched)
+
+Next steps:
+ * Clean up `theorem root_soundness`, audit with Hector
+ * Upgrade to v0.18.0, add Zicclsm iterate
+ * UPgrade to v1.0.0-alpha, iterate, then v1.0.0-beta
+ * Finish `theorem root_completeness`
+ * Expand testing
 
 
 ---

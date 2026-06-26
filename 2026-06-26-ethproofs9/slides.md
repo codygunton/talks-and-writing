@@ -52,7 +52,7 @@ Approach: build e2e with axioms, remove axioms, profit (bugs).
 Next steps:
  * Clean up `theorem root_soundness`, audit with Hector
  * Upgrade to v0.18.0, add Zicclsm iterate
- * UPgrade to v1.0.0-alpha, iterate, then v1.0.0-beta
+ * Upgrade to v1.0.0-alpha, iterate, then v1.0.0-beta
  * Finish `theorem root_completeness`
  * Expand testing
 

@@ -53,7 +53,7 @@ Next steps:
  * Clean up `theorem root_soundness`, audit with Hector
  * Upgrade to v0.18.0, add Zicclsm iterate
  * Upgrade to v1.0.0-alpha, iterate, then v1.0.0-beta
- * Finish `theorem root_completeness`
+ * Finish `theorem skeletal_root_completeness`
  * Expand testing
 
 

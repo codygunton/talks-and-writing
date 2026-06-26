@@ -15,7 +15,7 @@ _paginate: false
 <script type="module" src="assets/mermaid-zkevm-light.js"></script>
 <script src="assets/timer.js"></script>
 
-# Formal Verification of zkVMs
+# Finding Circuit Bugs with Formal Verification
 
 Cody Gunton — EthProofs Call #9, June 26, 2026
 

@@ -45,14 +45,18 @@
   };
 
   function fmt(s) {
-    var m = Math.floor(s / 60);
-    var sec = s % 60;
-    return (m < 10 ? '0' : '') + m + ':' + (sec < 10 ? '0' : '') + sec;
+    var sign = s < 0 ? '-' : '';
+    var a = Math.abs(s);
+    var m = Math.floor(a / 60);
+    var sec = a % 60;
+    return sign + (m < 10 ? '0' : '') + m + ':' + (sec < 10 ? '0' : '') + sec;
   }
 
   function render() {
     display.textContent = fmt(remaining);
-    if (remaining <= 60) {
+    if (remaining < 0) {
+      display.style.color = '#ff2d2d';
+    } else if (remaining <= 60) {
       display.style.color = '#ff5f5f';
     } else if (remaining <= 3 * 60) {
       display.style.color = '#ffcc44';
@@ -73,14 +77,8 @@
     if (running) return;
     running = true;
     interval = setInterval(function() {
-      if (remaining > 0) {
-        remaining--;
-        render();
-      } else {
-        clearInterval(interval);
-        running = false;
-        display.style.color = '#ff5f5f';
-      }
+      remaining--;
+      render();
     }, 1000);
   });
 

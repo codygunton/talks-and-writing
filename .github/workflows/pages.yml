@@ -52,6 +52,7 @@ jobs:
             "2026-06-10-zkevm-breakout"
             "2026-06-26-ethproofs9"
             "2026-07-08-zkevm-breakout"
+            "2026-08-12-zkevm-breakout"
           )
 
           # Find the commit of the last successful deploy (from cache key)
@@ -111,6 +112,7 @@ jobs:
               <li><a href="2026-06-10-zkevm-breakout/">zkEVM Breakout (Jun 2026)</a></li>
               <li><a href="2026-06-26-ethproofs9/">EthProofs Call #9: Formal Verification (Jun 2026)</a></li>
               <li><a href="2026-07-08-zkevm-breakout/">zkEVM Breakout (Jul 2026)</a></li>
+              <li><a href="2026-08-12-zkevm-breakout/">zkEVM Breakout (Aug 2026)</a></li>
             </ul>
           </body>
           </html>

@@ -33,10 +33,10 @@ https://github.com/eth-act/zkevm-test-monitor/
 
 https://eth-act.github.io/zkevm-test-monitor/
 
-- Added tests of GPU provers of OpenVM and SP1
+- Added tests of GPU provers for OpenVM and SP1
  - OpenVM 2.1 is fully compliant with the standard target RV64IM_Zicclsm
  - SP1 still has gaps
-- Upgrade to testing ZisK 1.0.0-alpha; one gap that is patched in 1.0.0-beta 👀
+- Upgraded to testing ZisK 1.0.0-alpha; one gap that is patched in 1.0.0-beta 👀
 
 ---
 
@@ -54,7 +54,7 @@ Stefanos Chaliasos, Martín Ochoa and Varun Thakore published a RISC-V ZKVM fuzz
 
 # ZKVM Handbook
 
-Ignacio and I wrote first draft of our ZKVM and guest program assessment frameworks:
+Ignacio and I wrote a first draft of our ZKVM and guest program assessment frameworks:
 https://github.com/eth-act/zkevm-standards/blob/main/handbooks/zkvm-handbook.md
  - Conform to eth-act standards; pass tests
  - Reproducible sufficient performance on reference hardware; reasonable proof sizes
@@ -68,11 +68,11 @@ https://github.com/eth-act/zkevm-standards/blob/main/handbooks/zkvm-handbook.md
 https://github.com/eth-act/zisk-fv
  - Found two more circuit bugs while tightening hypotheses ([#1217](https://github.com/0xPolygonHermez/zisk/pull/1217), [#1228](https://github.com/0xPolygonHermez/zisk/pull/1228))
  - Still winding down solo work (50 PRs...) / ramping up to collaboration with ZisK
- - Discovered some dropped constraints by round-tripping (would have discovered in root theorem API audit)
+ - Discovered some dropped constraints by round-tripping (would have discovered in a root theorem API audit)
 
 
 ---
 
-# Improvements in verified-ZKEVM libraries
+# Improvements in Verified-zkEVM libraries
 - [CompPoly](https://github.com/Verified-zkEVM/CompPoly): shipping pre-built artifacts for faster development [301](https://github.com/Verified-zkEVM/CompPoly/pull/301), faster BN254 and BLS12 arithmetic [284](https://github.com/Verified-zkEVM/CompPoly/pull/284); more KoalaBear extensions [282](https://github.com/Verified-zkEVM/CompPoly/pull/282), [283](https://github.com/Verified-zkEVM/CompPoly/pull/283) and support for binary fields [278](https://github.com/Verified-zkEVM/CompPoly/pull/278).
 - [ArkLib](https://github.com/Verified-zkEVM/ArkLib): Progress on WHIR formalization [534](https://github.com/Verified-zkEVM/ArkLib/pull/534), [599](https://github.com/Verified-zkEVM/ArkLib/pull/599), [603](https://github.com/Verified-zkEVM/ArkLib/pull/603), [616](https://github.com/Verified-zkEVM/ArkLib/pull/616), [658](https://github.com/Verified-zkEVM/ArkLib/pull/658), [667](https://github.com/Verified-zkEVM/ArkLib/pull/667)

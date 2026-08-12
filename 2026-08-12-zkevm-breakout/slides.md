@@ -33,45 +33,46 @@ https://github.com/eth-act/zkevm-test-monitor/
 
 https://eth-act.github.io/zkevm-test-monitor/
 
-<!-- TODO: this month's progress -->
+- Added tests of GPU provers of OpenVM and SP1
+ - OpenVM 2.1 is fully compliant with the standard target RV64IM_Zicclsm
+ - SP1 still has gaps
+- Upgrade to testing ZisK 1.0.0-alpha; one gap that is patched in 1.0.0-beta 👀
 
 ---
 
-# Formal RISC-V Compliance of ZisK
+# zkvmBlast
+
+Stefanos Chaliasos, Martín Ochoa and Varun Thakore published a RISC-V ZKVM fuzzing library with the help of an EF grant
+ - Some contributions: seed corpus; Cascade-style RISC-V generation and random Rust program generation; fuzzer for several ZKVM proving pipelines (including GPU proving)
+ - 7 bugs found and reported (and counting)
+ - Blog post: https://blog.zksecurity.xyz/posts/zkvmblast/
+ - Repo: https://github.com/zksecurity/zkvmblast
+ - Seeds: https://github.com/zksecurity/riscv-seeds-lab
+
+
+---
+
+# ZKVM Handbook
+
+Ignacio and I wrote first draft of our ZKVM and guest program assessment frameworks:
+https://github.com/eth-act/zkevm-standards/blob/main/handbooks/zkvm-handbook.md
+ - Conform to eth-act standards; pass tests
+ - Reproducible sufficient performance on reference hardware; reasonable proof sizes
+ - Conform to cryptographic protocol and formal verification requirements
+ - Permissive licensing
+
+---
+
+# Formally proving RISC-V Compliance of ZisK
 
 https://github.com/eth-act/zisk-fv
+ - Found two more circuit bugs while tightening hypotheses ([#1217](https://github.com/0xPolygonHermez/zisk/pull/1217), [#1228](https://github.com/0xPolygonHermez/zisk/pull/1228))
+ - Still winding down solo work (50 PRs...) / ramping up to collaboration with ZisK
+ - Discovered some dropped constraints by round-tripping (would have discovered in root theorem API audit)
 
-<!-- TODO: this month's progress -->
-
----
-
-# RISC-V Fuzzing
-
-Built on [Ere](https://github.com/eth-act/ere).
-
-<!-- TODO: this month's progress -->
 
 ---
 
-# Innovations and ArkLib
-
-- [ArkLib](https://github.com/Verified-zkEVM/ArkLib)
-
-<!-- TODO: this month's progress -->
-
----
-
-# https://github.com/frisitano/evm-sail
-
-Formal specification in the Sail machine spec language.
-
-<!-- TODO: this month's progress -->
-
----
-
-# Thanks for your attention!
-
-<!-- _class: lead -->
-<!-- _paginate: false -->
-
-<div class="bottom-bar"><img src="assets/logo-zkevm-light.svg" class="logo" alt=""></div>
+# Improvements in verified-ZKEVM libraries
+- [CompPoly](https://github.com/Verified-zkEVM/CompPoly): shipping pre-built artifacts for faster development [301](https://github.com/Verified-zkEVM/CompPoly/pull/301), faster BN254 and BLS12 arithmetic [284](https://github.com/Verified-zkEVM/CompPoly/pull/284); more KoalaBear extensions [282](https://github.com/Verified-zkEVM/CompPoly/pull/282), [283](https://github.com/Verified-zkEVM/CompPoly/pull/283) and support for binary fields [278](https://github.com/Verified-zkEVM/CompPoly/pull/278).
+- [ArkLib](https://github.com/Verified-zkEVM/ArkLib): Progress on WHIR formalization [534](https://github.com/Verified-zkEVM/ArkLib/pull/534), [599](https://github.com/Verified-zkEVM/ArkLib/pull/599), [603](https://github.com/Verified-zkEVM/ArkLib/pull/603), [616](https://github.com/Verified-zkEVM/ArkLib/pull/616), [658](https://github.com/Verified-zkEVM/ArkLib/pull/658), [667](https://github.com/Verified-zkEVM/ArkLib/pull/667)

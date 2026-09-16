@@ -27,39 +27,27 @@ https://codygunton.github.io/talks-and-writing/2026-09-09-zkevm-breakout/
 
 ---
 
-# RISC-V Compliance Testing
+# Hash collision mitigations in guests
 
-https://github.com/eth-act/zkevm-test-monitor/
+@LukaszRozmej of Nethermind [described](https://github.com/ethereum/EIPs/pull/12286) a DoS attack on 8025 provers. He makes the case for zkVMs to provide a per-proof construction source of randomness as the solution this security problem [here](https://github.com/ethereum/EIPs/pull/12289).
 
-https://eth-act.github.io/zkevm-test-monitor/
-
-<!-- TODO: this month's progress -->
-
----
-
-# zkvmBlast
-
-Blog post: https://blog.zksecurity.xyz/posts/zkvmblast/
-
-Repo: https://github.com/zksecurity/zkvmblast
-
-<!-- TODO: this month's progress -->
+ - Seeding with `new_payload_request_root` was proposed as a mitigation, but it is not a complete solution.
+ - FOCIL undermines the "builder won't DoS itself" rationale that this is issue goes away if we adopt "prover killer killer" strategy in an eventual mandatory proofs spec.
+ - Standards proposal [#something](): hosts could provide access to sampling unconstrained randomness.
 
 ---
 
-# ZKVM Handbook
-
-https://github.com/eth-act/zkevm-standards/blob/main/handbooks/zkvm-handbook.md
-
-<!-- TODO: this month's progress -->
-
----
-
-# Formally proving RISC-V Compliance of ZisK
+# Formally Proving RISC-V Compliance of ZisK
 
 https://github.com/eth-act/zisk-fv
 
-<!-- TODO: this month's progress -->
+Additional strengthening of zisk-fv:
+
+---
+
+# Soundcalc
+
+STIR support will land in [#90](https://github.com/ethereum/soundcalc/pull/90), which is already approved by Benedict Wagner.
 
 ---
 

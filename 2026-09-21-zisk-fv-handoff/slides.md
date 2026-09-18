@@ -15,7 +15,7 @@ _paginate: false
 <script type="module" src="assets/mermaid-zkevm-light.js"></script>
 <script src="assets/timer.js"></script>
 
-# Handing Off ZisK-FV
+# zisk-fv Handoff Meeting 1
 
 Cody Gunton - September 21, 2026
 
@@ -26,132 +26,117 @@ https://codygunton.github.io/talks-and-writing/2026-09-21-zisk-fv-handoff/
 <div class="bottom-bar"><img src="assets/logo-zkevm-light.svg" class="logo" alt=""></div>
 
 ---
+# Scratch/todo
+
+- why aeneas_extract
+- next steps: v0.18.0; bug fixes; improvements (issues but also things like clean as first class)
+- trust gate
+- write up clean
+- proposed plan to continue the work
+- double check dep graph issue
+- update readme etc form presentation
+- in-scope and out-of-scope AIRs
+- testing
+
+---
 
 # Agenda
 
-1. What zisk-fv is, and what it is not
-2. Repository tour
-3. Proof architecture
-4. Current state: proved, partial, open
-5. Build, test and CI
-6. Track record: bugs found
-7. Known gaps and risks
-8. Handoff plan and owners
-
-<!-- TODO: cut to fit the slot; confirm the time budget -->
 
 ---
 
-# What zisk-fv Is
+# High-level: what is this?
 
-Lean 4 formal verification of the ZisK zkVM against the Sail RISC-V specification.
-
-https://github.com/eth-act/zisk-fv
-
-- Target ISA: <!-- TODO: state the exact target, e.g. RV64IM_Zicclsm -->
-- In scope: <!-- TODO: which circuits and which properties -->
-- Out of scope: <!-- TODO: name the exclusions explicitly -->
+This is a lean proof of RISC-V circuit *soundness*: if a trace satisfies the constraints, then the trace is a valid RISC-V execution trace.
+(*completeness* would say: every valid RISC-V execution trace is accepted; afaik nobody proves this but I have some initial WIP in the repo)
 
 ---
 
-# What zisk-fv Is Not
+# High-level: stats
 
-Say the limits out loud. They matter more than the results.
-
-- No claim about: TODO <!-- e.g. the proof system itself -->
-- Trusted base we do not verify: TODO
-- Hypotheses that stay unaudited: TODO
-
----
-
-# Repository Tour
-
-<!-- TODO: one line per directory; keep it to the paths a new owner must open first -->
-
-| Path | Holds |
-| --- | --- |
-| TODO | TODO |
-| TODO | TODO |
-| TODO | TODO |
+Lean4 version: IOU
+Number of lines of Lean: IOU
+Number of commits:
+Build on [IOU machine spec]: IOU minutes to extract (mem: IOU); IOU minutes to prove soundness theorem (mem: IOU)
+Tokens consumed:
+IOU LOC activity graph showing when I did and didn't work on this
 
 ---
 
-# Proof Architecture
-
-<!-- TODO: edit diagrams/proof-chain.mmd so it matches the real chain -->
-
-<div data-mermaid="diagrams/proof-chain.mmd" style="display:flex;align-items:center;justify-content:center;width:100%;"></div>
-
-- The root theorem states: <!-- TODO -->
-- It depends on these hypotheses: <!-- TODO -->
+# High-level: status
+- Conditional soundness theorem, partially hardened, untested in upgrades, 4-5 months behind zisk releases.
+- Upstreaming of fork work needed
+- Still under development. This is hard work. Every other foo-fv we've looked at has serious issues, does less, and so far we see no indication of ongoing maintenance.
+- Started as an experiment and that is apparent! But I've also put a lot of cycles in to building it out and hardening it. A little bit of effort into clarifying it.
 
 ---
 
-# Current State
+# Extraction, modeling and proofs
 
-<!-- TODO: give counts, not adjectives -->
-
-- Proved: <!-- TODO: which instruction classes, how many theorems -->
-- Partial: <!-- TODO: what is stated but still has `sorry` -->
-- Open: <!-- TODO: what is not started -->
-- Axiom hygiene: <!-- TODO: result of the axiom check on the root theorem -->
+We turn code that's not in Lean into Lean and then write proofs about it.
+- Lean code generator is an "extractor"
+- Hand-writing code that looks like the original source is "modeling"
+- We trust the extractor or the model. Extractor is preferred for maintainability.
 
 ---
 
-# Build, Test and CI
+# Extraction & modeling: zisk side
 
-<!-- TODO: paste the exact commands a new owner runs on day one -->
+Subclaims:
+ - The ELF is translated into a correct ROM representation
+ - The input data is correctly executed against the ROM
+ - The AIR relations are applied against the ROM
 
-```bash
-# TODO: toolchain pin and cache fetch
-# TODO: full build
-# TODO: focused build for the inner loop
-```
+To evaluate these claims we need to translation the ROM construction, the execution, and the actual circuit arithmetic into Lean
 
-- Lean version pin: <!-- TODO -->
-- Full build time: <!-- TODO -->
-- CI workflow: <!-- TODO: link -->
 
 ---
 
-# Track Record: Bugs Found
+# Extraction: zisk side
 
-The proofs found real circuit bugs. Use this to set expectations.
+In scope: IOU list of dirs in scope for zisk extraction.
 
-- [#1217](https://github.com/0xPolygonHermez/zisk/pull/1217): TODO
-- [#1228](https://github.com/0xPolygonHermez/zisk/pull/1228): TODO
-- Dropped constraints found by round-tripping: TODO
 
----
+# Extraction: zisk side
+IOU: mermaid showing the progression of an elf and data through down to instructiosn flowing through busses, colored to show which steps are extracted and which are modeled.Nodes are datatypes, names above arrows are function names, below ares are the name of the extraction functions in ziskfv
 
-# Known Gaps and Risks
 
-<!-- TODO: be blunt; this is the most useful slide for the new team -->
 
-- Gap: TODO <!-- why it is open, and the cost to close it -->
-- Risk: TODO <!-- and the signal that tells you it became real -->
-- Deliberate spec/circuit divergence: TODO
 
 ---
 
-# Handoff Plan
-
-<!-- TODO: confirm each row with the receiving team before the call -->
-
-| Item | Owner after handoff | Date |
-| --- | --- | --- |
-| Proof maintenance | TODO | TODO |
-| CI and toolchain bumps | TODO | TODO |
-| Review of new circuit changes | TODO | TODO |
-| Escalation to me | TODO: how long, which channel | TODO |
+# Modeling: zisk side
 
 ---
 
-# What I Need From You
+# Extraction: spec side
 
-- A named proof owner: TODO
-- Notice before circuit changes land: TODO
-- A decision on the first milestone: TODO
+---
+
+# Proof architecture
+
+---
+
+# Top-level theorem
+
+---
+
+# Ideal trajectory of the root theorem
+
+---
+
+# TCB
+
+
+---
+
+# Where do we go from here?
+
+My dream: collaboration with both sides dedicating human and AI resources
+ - Short term: You familiarize yourselves now and pick up a big task. I work in parallel toward upgradability and inclusion in CI.
+ - Medium term: I ramp down and keep track of the project, possibly picking up tasks if it's helpful, as you all integrate into the dev process (goal: nightly CI). 
+ - Long term: I stay on as a co-owner but development is mainly driven by you. I conduct period audits.
+
 
 ---
 

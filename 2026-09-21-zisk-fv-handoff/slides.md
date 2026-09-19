@@ -94,11 +94,30 @@ To evaluate these claims we need to translation the ROM construction, the execut
 
 # Extraction: zisk side
 
-In scope: IOU list of dirs in scope for zisk extraction.
+**Via pilout** — `pil2-compiler` → `zisk.pilout` → `pil-extract`
+`pil/` · `state-machines/{main,mem,binary,arith}/pil/`
 
+**Straight from source** — virtual tables, absent from the pilout
+`arith/src/arith_table_data.rs` (74 rows) · `mem/src/mem_align_rom_sm.rs` (256 rows)
+
+**Via Aeneas/Charon** — the lowerer
+`core/src/{aeneas_extract,riscv2zisk_single_row,riscv2zisk_context,zisk_inst,zisk_inst_builder}.rs`
+`riscv/src/{rv64im_decode,fence_decode}.rs`
+
+**Out of scope** — `emulator/` `executor/` `precompiles/` `data-bus/` `common/`
+`rom-setup/` `prover-backend/` `verifier/` `distributed/` `cli/` `sdk/` `lib-*/`
+
+**35 AIRs → 10 extracted · 4,095 constraints → 355**
+
+---
 
 # Extraction: zisk side
-IOU: mermaid showing the progression of an elf and data through down to instructiosn flowing through busses, colored to show which steps are extracted and which are modeled.Nodes are datatypes, names above arrows are function names, below ares are the name of the extraction functions in ziskfv
+
+<div data-mermaid="diagrams/zisk-extraction.mmd" style="height:72%"></div>
+
+<span style="color:#22c55e">■</span> extracted &nbsp;&nbsp; <span style="color:#f59e0b">■</span> modeled by hand &nbsp;&nbsp; <span style="color:#94a3b8">■</span> outside Lean
+
+Dotted = assumed, not proved. Bold = the zisk-fv extraction entry point.
 
 
 
@@ -106,6 +125,39 @@ IOU: mermaid showing the progression of an elf and data through down to instruct
 ---
 
 # Modeling: zisk side
+
+The pilout gives polynomials over **column indices**: `column := 8, rotation := 0`.
+Proofs need **named fields**: `m.a_src_imm row`. So we hand-write a mirror.
+
+| | |
+| --- | --- |
+| `ZiskFv/AirsClean/` | Clean components, one per AIR — 57k lines |
+| `ZiskFv/Airs/` | `Valid_<AIR>` predicates, bus shapes — 19k lines |
+| `ZiskFv/Channels/` | message + bus model |
+| `Compliance/AcceptedZiskTrace.lean` | what “accepted” means: 3 data fields, 7 obligations |
+
+Kept honest by **welds** — `AirsClean/*MirrorWeld.lean`, 6 files, 5.2k lines.
+Each proves `mirror ↔ generated polynomial`, mostly by `Iff.rfl`.
+
+---
+
+# Modeling: zisk side — what the welds miss
+
+Of the **355** extracted constraints:
+
+| | |
+| --- | --: |
+| not named anywhere `lake build` elaborates | **143** |
+| not reachable from `root_soundness` | **350** |
+
+- Base-field layer is **done** — 0 of 152 unchecked by the build.
+- The gap is stage-2: the **bus tuple**, folded into the logUp accumulator constraint.
+- `Extraction/Buses.lean` is generated and **imported by nothing**.
+- Welds are a **build-time gate, not part of the theorem**. Deleting one changes nothing that `root_soundness` proves.
+
+Mutation sweep: **24 caught / 11 missed**. Round 32 retagged BinaryAdd’s op-bus emission `OP_ADD → OP_SUB` while it still computed `a + b` — build stayed green.
+
+<!-- Issues: #368 exposure, #371 lookup recognizer, #374 Arith buses, #354 compile-time emitters -->
 
 ---
 

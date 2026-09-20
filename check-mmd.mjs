@@ -19,8 +19,22 @@ const DECL = /^\s*([A-Za-z_][\w-]*)\s*(?:\[|\(|\{|>|\[\[|\[\()/;
 const EDGE = /([A-Za-z_][\w-]*)\s+([A-Za-z_][\w-]*)@(-->|---|-\.->|==>|-\.-)|([A-Za-z_][\w-]*)\s*(-->|---|-\.->|==>|-\.-)/;
 const ARROW = /(-->|---|-\.->|==>|-\.-)/;
 
+// Every check here is flowchart-specific. Other diagram types (gantt,
+// sequence, ...) have different rules -- a bare `%%` really is a comment in a
+// gantt chart -- so they are skipped rather than mis-reported.
+function diagramType(lines) {
+  for (const raw of lines) {
+    const l = raw.replace(/%%\{.*?\}%%/g, '').trim();
+    if (!l || l.startsWith('%%')) continue;
+    return l.split(/[\s-]/)[0].toLowerCase();
+  }
+  return '';
+}
+
 function check(file) {
   const lines = fs.readFileSync(file, 'utf8').split('\n');
+  const kind = diagramType(lines);
+  if (kind !== 'flowchart' && kind !== 'graph') return { skipped: kind || 'unknown' };
   const problems = [];
   const add = (sev, line, msg) => problems.push({ sev, line, msg });
 
@@ -166,7 +180,9 @@ const files = (args.length ? args : [process.cwd()]).flatMap((a) =>
 );
 let worst = 0;
 for (const f of files) {
-  const { problems, edgeCount } = check(f);
+  const res = check(f);
+  if (res.skipped) { console.log(`skip ${f}  (${res.skipped}, not a flowchart)`); continue; }
+  const { problems, edgeCount } = res;
   const errs = problems.filter((p) => p.sev === 'ERROR');
   const warns = problems.filter((p) => p.sev === 'WARN');
   const tag = errs.length ? 'FAIL' : warns.length ? 'warn' : 'ok  ';

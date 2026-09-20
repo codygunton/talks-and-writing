@@ -17,7 +17,9 @@ import path from 'node:path';
 
 const DECL = /^\s*([A-Za-z_][\w-]*)\s*(?:\[|\(|\{|>|\[\[|\[\()/;
 const EDGE = /([A-Za-z_][\w-]*)\s+([A-Za-z_][\w-]*)@(-->|---|-\.->|==>|-\.-)|([A-Za-z_][\w-]*)\s*(-->|---|-\.->|==>|-\.-)/;
-const ARROW = /(-->|---|-\.->|==>|-\.-)/;
+// Longest first: `<-->` must win over `-->`, or the leading `<` sticks to the
+// arrow name and every reference to it looks undefined.
+const ARROW = /(<-->|<-\.->|<==>|<--o|<--x|-->|--o|--x|---|-\.->|==>|-\.-)/;
 
 // Every check here is flowchart-specific. Other diagram types (gantt,
 // sequence, ...) have different rules -- a bare `%%` really is a comment in a

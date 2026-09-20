@@ -16,6 +16,9 @@ flowchart TB
     classDef eModeled   stroke:#f59e0b,stroke-width:3px,fill:none
     classDef eAssumed   stroke:#ef4444,stroke-width:3px,fill:none
     classDef eAbsent    stroke:#94a3b8,stroke-width:2px,fill:none
+    %% `marker-end:none` suppresses the far arrowhead of a `<-->` edge, so it
+    %% renders as a single arrow pointing back at the declared SOURCE.
+    classDef eModeledUp stroke:#f59e0b,stroke-width:3px,fill:none,marker-end:none
 
     %% 1 and 2 sit side by side inside an unlabelled band.
     %% Its `direction LR` only survives while no NODE-level edge
@@ -67,16 +70,19 @@ flowchart TB
     %% `direction` only while none of its NODES is an endpoint of an edge
     %% crossing its boundary -- so `ROMB --> WIT` would stack 1 above 2, and
     %% `VA --> WIT` would stack subgraph 4 vertically.
-    %% Note e_bridge is drawn 3 -> 4, against the data flow, so that 4 lands
-    %% below 3 and stays left-right. Drawing it 4 -> 3 forces 4 above 3:
-    %% dagre always ranks an arrow's target lower, and mermaid has no
-    %% up-arrow (`<--` does not parse, `<-.-` renders no arrowhead).
+    %% e_bridge is DECLARED WIT -> CON so that 4 ranks below 3 and keeps its
+    %% `direction LR`. It is drawn `<-->` and given `eModeledUp`, whose
+    %% `marker-end:none` removes the arrowhead at the CON end -- so it renders
+    %% as a single arrow pointing UP from 4 into 3, the real Bridge.rowAt
+    %% direction (`AirsClean/Main/Bridge.lean:34`: Valid_Main -> MainRow).
+    %% Mermaid has no plain up-arrow; only `<-->` carries a start marker.
     TOP e_mainrom@-->|"mainWithRom"| WIT
-    WIT e_bridge@-->|"Bridge.rowAt"| CON
+    WIT e_bridge@<-->|"Bridge.rowAt"| CON
 
     %% arrow colours — by name, order does not matter
     class e_decode,e_lower,e_pilextract,e_transpile eExtracted
-    class e_fetch,e_progbind,e_opbus,e_balance,e_weld,e_mainrom,e_bridge eModeled
+    class e_fetch,e_progbind,e_opbus,e_balance,e_weld,e_mainrom eModeled
+    class e_bridge eModeledUp
     class e_pilc eAbsent
 
     style TOP  fill:none,stroke:none

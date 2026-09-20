@@ -92,35 +92,68 @@ To evaluate these claims we need to translation the ROM construction, the execut
 
 ---
 
-# Extraction: zisk side
+# Extraction & modeling: zisk side
 
-**Via pilout** — `pil2-compiler` → `zisk.pilout` → `pil-extract`
-`pil/` · `state-machines/{main,mem,binary,arith}/pil/`
+<div data-mermaid="diagrams/zisk-extraction.mmd" style="height:78%"></div>
 
-**Straight from source** — virtual tables, absent from the pilout
-`arith/src/arith_table_data.rs` (74 rows) · `mem/src/mem_align_rom_sm.rs` (256 rows)
+<span style="color:#22c55e">■</span> extracted &nbsp; <span style="color:#f59e0b">■</span> modeled &nbsp; <span style="color:#ef4444">■</span> assumed &nbsp; <span style="color:#94a3b8">■</span> not in Lean
 
-**Via Aeneas/Charon** — the lowerer
-`core/src/{aeneas_extract,riscv2zisk_single_row,riscv2zisk_context,zisk_inst,zisk_inst_builder}.rs`
-`riscv/src/{rv64im_decode,fence_decode}.rs`
+---
 
-**Out of scope** — `emulator/` `executor/` `precompiles/` `data-bus/` `common/`
-`rom-setup/` `prover-backend/` `verifier/` `distributed/` `cli/` `sdk/` `lib-*/`
+# Extraction & modeling: the evidence
 
-**35 AIRs → 10 extracted · 4,095 constraints → 355**
+| node | status | evidence |
+| --- | --- | --- |
+| raw 32-bit word | modeled | `rawProgram` binder, `Soundness.lean:1969` |
+| `DecodedRv64im` · `ZiskInst row` | extracted | `ProductionM2.lean` (63 / 140 refs) |
+| ROM table | modeled | `trace.program`; `ZiskRomMessage`, `Channels/ZiskRomBus.lean:58` (11 fields = `rom.pil`) |
+| Main AIR row | modeled | `MainRowWithRom`, `AirsClean/Main/Row.lean:127` |
+| op-bus tuple | modeled | `OperationBusEntry`, `Airs/OperationBus/OperationBus.lean:29` |
+| Binary / Arith rows | modeled | `BinaryRow` `Binary/Row.lean:78`; `ArithMulRow` `ArithMul/Row.lean:81` |
+| `Extraction/*.lean` | extracted | 18 modules, `nix/extracted-lean.nix` |
+| `Valid_<AIR>` | modeled | `Valid_Main`, `Airs/Main/Main.lean:23` |
+| ELF · `ZiskRom` map · `EmuTrace` · `*.pil` · pilout | not in Lean | no match under `ZiskFv/` |
+
+| link | status | evidence |
+| --- | --- | --- |
+| `riscv::decode_32_core` | extracted | called `riscv_interpreter.rs:250`; start `aeneas_extract.rs:353` |
+| `Riscv2ZiskContext::lower_rv64im_single_row` | extracted | start `aeneas_extract.rs:361`; production delegates `riscv2zisk_context.rs:667` |
+| `aeneas_extract::extract_transpile_rv64im_rows_raw` | extracted | `aeneas_extract.rs:377`; in `ProductionM2.lean` |
+| `pil-extract air` | extracted | `nix/extracted-lean.nix` |
+| `RawProgramBinding.ProgramRowsBinding` | **assumed** | `RawProgramBinding.lean:172`; row content comes from `romRowOf:103`, only the layout is assumed |
+| `AcceptedZiskTrace.channels_balanced` | **assumed** | `AcceptedZiskTrace.lean:93` |
+| `AirsClean.Main.mainWithRom` | modeled | `Main/Constraints.lean:242` |
+| `OperationBus.opBus_row_Main` | modeled | `OperationBus.lean:62` (mirrors `main.pil:367`, unwelded) |
+| `AirsClean.*MirrorWeld` | modeled | 6 files, 5.2k lines |
+| `AirsClean.Main.Bridge.rowAt` | modeled | `Main/Bridge.lean:34` |
+| `riscv::riscv_interpreter` · `Riscv2ZiskContext::insert_inst` · `RomSM::compute_trace_rom` · `Emu::step_fast` · `Emu::build_full_trace_step` · `pil2-compiler` | not in Lean | — |
+
+Labels are qualified: `Type::method` is Rust, `Module.name` is Lean.
+The `BTreeMap` is production-only — under `aeneas_extract` the field becomes
+`extract_inst : Option<ZiskInstBuilder>` and `insert_inst` keeps one row
+(`riscv2zisk_context.rs:87-89,105-112`). Aeneas never sees the map.
+
+**assumed ≠ not in Lean.** A premise is a hypothesis `root_soundness` needs.
+Code that is not in Lean cannot make the theorem false.
 
 ---
 
 # Extraction: zisk side
 
-<div data-mermaid="diagrams/zisk-extraction.mmd" style="height:72%"></div>
+| Extractor | Upstream input | Lean output |
+| --- | --- | --- |
+| `pil-extract air` | `zisk.pilout` | `Main` `Arith` `Mem` `MemAlign`×4 `Binary`×3 |
+| `pil-extract bus-emissions` | `zisk.pilout` hints, bus 5000 / 10 | `Buses.lean` `MemoryBuses.lean` |
+| `pil-extract lookup-wiring` | `zisk.pilout` | `LookupWiring.lean` |
+| `pil-extract arith-table` | `arith/src/arith_table_data.rs` | `ArithTable.lean` — 74 rows |
+| `pil-extract mem-align-rom` | `mem/pil/mem_align_rom.pil` **+** `mem/src/mem_align_rom_sm.rs` | `MemAlignRom.lean` — 256 rows |
+| `charon` → `aeneas` | `core/src/aeneas_extract.rs` `extract_*` wrappers | `trust/aeneas/ProductionM2.lean` |
 
-<span style="color:#22c55e">■</span> extracted &nbsp;&nbsp; <span style="color:#f59e0b">■</span> modeled by hand &nbsp;&nbsp; <span style="color:#94a3b8">■</span> outside Lean
+`zisk.pilout` is `pil2-compiler` over `pil/` and `state-machines/{main,mem,binary,arith}/pil/`.
+Charon follows the call graph into `riscv2zisk_single_row` `riscv2zisk_context` `zisk_inst{,_builder}` `riscv/src/{rv64im_decode,fence_decode}`.
+Drivers: `nix/extracted-lean.nix` (+ `circuit-shim`, 3 Mem sidecars) · `scripts/aeneas-production-extract.sh`
 
-Dotted = assumed, not proved. Bold = the zisk-fv extraction entry point.
-
-
-
+**35 AIRs → 10 extracted · 4,095 constraints → 355**
 
 ---
 

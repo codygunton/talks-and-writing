@@ -63,17 +63,16 @@ flowchart TB
         EX e_weld@-->|"*MirrorWeld"| VA
     end
 
-    %% 2 -> 3 leaves the band as TOP --> WIT. It must start at TOP, not at
-    %% ROMB: a node- or cluster-level edge out of ROMB crosses the band
-    %% boundary, and mermaid then ignores the band's `direction LR`, stacking
-    %% 1 and 2 vertically.
-    %%
-    %% `WIT ~~~ CON` is an invisible link that forces 4 BELOW 3. Without it
-    %% `VA --> WIT` puts 4 above 3, because an arrow always ranks its target
-    %% lower. Mermaid has no up-arrow, so rank and arrowhead are set apart.
+    %% Both of these are CLUSTER-level on purpose. A subgraph keeps its
+    %% `direction` only while none of its NODES is an endpoint of an edge
+    %% crossing its boundary -- so `ROMB --> WIT` would stack 1 above 2, and
+    %% `VA --> WIT` would stack subgraph 4 vertically.
+    %% Note e_bridge is drawn 3 -> 4, against the data flow, so that 4 lands
+    %% below 3 and stays left-right. Drawing it 4 -> 3 forces 4 above 3:
+    %% dagre always ranks an arrow's target lower, and mermaid has no
+    %% up-arrow (`<--` does not parse, `<-.-` renders no arrowhead).
     TOP e_mainrom@-->|"mainWithRom"| WIT
-    WIT ~~~ CON
-    VA   e_bridge@-->|"Bridge.rowAt"| WIT
+    WIT e_bridge@-->|"Bridge.rowAt"| CON
 
     %% arrow colours — by name, order does not matter
     class e_decode,e_lower,e_pilextract,e_transpile eExtracted

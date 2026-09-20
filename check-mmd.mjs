@@ -37,6 +37,12 @@ function check(file) {
   lines.forEach((raw, i) => {
     const n = i + 1;
     const line = raw.replace(/%%\{.*?\}%%/g, '');
+    // A bare `%%` is NOT treated as a comment by mermaid -- it renders as a
+    // node labelled "%%". Comment separators must carry text.
+    if (/^\s*%%\s*$/.test(raw)) {
+      add('ERROR', n, 'a bare `%%` renders as a stray node labelled "%%"; put text after it or delete the line');
+      return;
+    }
     if (/^\s*%%/.test(line)) return;                    // comment
 
     let m;

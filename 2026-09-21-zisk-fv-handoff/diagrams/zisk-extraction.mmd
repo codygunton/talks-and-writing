@@ -17,8 +17,14 @@ flowchart TB
     classDef eAssumed   stroke:#ef4444,stroke-width:3px,fill:none
     classDef eAbsent    stroke:#94a3b8,stroke-width:2px,fill:none
 
+    %% 1 and 2 sit side by side inside an unlabelled band.
+    %% Its `direction LR` only survives while no NODE-level edge
+    %% crosses the band boundary — that is why the arrow out of it
+    %% below is drawn cluster-to-cluster (ROMB --> WIT).
+    subgraph TOP[" "]
+    direction LR
     subgraph SRC["1 · program image"]
-        direction TB
+        direction LR
         ELF["ELF bytes"]:::absent
         RAW["raw 32-bit word"]:::modeled
         DEC["DecodedRv64im"]:::extracted
@@ -34,14 +40,14 @@ flowchart TB
         ROMT["ROM table<br/>trace.program"]:::modeled
         AEN e_progbind@-->|"ProgramRows<br/>Binding"| ROMT
     end
+    ZI e_transpile@-->|"extract_transpile_<br/>rv64im_rows_raw"| AEN
+    end
 
     subgraph WIT["3 · witness"]
         direction LR
-        EMU["EmuTrace"]:::absent
         MT["Main AIR row"]:::modeled
         OB["op-bus tuple"]:::modeled
         SEC["Binary / Arith rows"]:::modeled
-        EMU e_buildrow@-->|"Emu::build_<br/>full_trace_step"| MT
         MT e_opbus@-->|"opBus_row_Main"| OB
         OB e_balance@-->|"channels_balanced"| SEC
     end
@@ -57,18 +63,24 @@ flowchart TB
         EX e_weld@-->|"*MirrorWeld"| VA
     end
 
-    %% TODO: MAP is never declared — give it a label and a :::class
-    ZI   e_instmap@-->|"insert_inst"| MAP
-    ZI   e_transpile@-->|"extract_transpile_<br/>rv64im_rows_raw"| AEN
-    MAP  e_stepfast@-->|"Emu::step_fast"| EMU
-    ROMT e_mainrom@-->|"mainWithRom"| MT
-    VA   e_bridge@-->|"Bridge.rowAt"| MT
+    %% 2 -> 3 leaves the band as TOP --> WIT. It must start at TOP, not at
+    %% ROMB: a node- or cluster-level edge out of ROMB crosses the band
+    %% boundary, and mermaid then ignores the band's `direction LR`, stacking
+    %% 1 and 2 vertically.
+    %%
+    %% `WIT ~~~ CON` is an invisible link that forces 4 BELOW 3. Without it
+    %% `VA --> WIT` puts 4 above 3, because an arrow always ranks its target
+    %% lower. Mermaid has no up-arrow, so rank and arrowhead are set apart.
+    TOP e_mainrom@-->|"mainWithRom"| WIT
+    WIT ~~~ CON
+    VA   e_bridge@-->|"Bridge.rowAt"| WIT
 
     %% arrow colours — by name, order does not matter
     class e_decode,e_lower,e_pilextract,e_transpile eExtracted
-    class e_fetch,e_progbind,e_buildrow,e_opbus,e_balance,e_weld,e_mainrom,e_bridge eModeled
-    class e_pilc,e_instmap,e_stepfast eAbsent
+    class e_fetch,e_progbind,e_opbus,e_balance,e_weld,e_mainrom,e_bridge eModeled
+    class e_pilc eAbsent
 
+    style TOP  fill:none,stroke:none
     style SRC  fill:#f8fafc,stroke:#cbd5e1
     style ROMB fill:#f8fafc,stroke:#cbd5e1
     style WIT  fill:#f8fafc,stroke:#cbd5e1

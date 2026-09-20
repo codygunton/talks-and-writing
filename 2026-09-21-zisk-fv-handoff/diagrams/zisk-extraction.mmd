@@ -1,9 +1,21 @@
-%%{init: {"theme": "default", "themeVariables": {"primaryTextColor": "#334155", "lineColor": "#94a3b8", "fontSize": "14px"}}}%%
+%%{init: {"theme": "default", "themeVariables": {"primaryTextColor": "#334155", "lineColor": "#94a3b8", "fontSize": "12px"}}}%%
+%% EDITING THIS FILE
+%%   Every arrow carries a name:   A e_foo@-->|"label"| B
+%%   Colour is set by name at the bottom, never by position.
+%%   Rule: an arrow takes the colour of the node it points AT.
+%%   Check your edit with:  node ../../check-mmd.mjs
 flowchart TB
+    %% node palette
     classDef extracted fill:#22c55e,stroke:#16a34a,color:#ffffff
     classDef modeled   fill:#f59e0b,stroke:#d97706,color:#ffffff
     classDef assumed   fill:#ef4444,stroke:#dc2626,color:#ffffff
     classDef absent    fill:#94a3b8,stroke:#64748b,color:#ffffff
+
+    %% arrow palette — same colours, fill:none so the curve is not filled
+    classDef eExtracted stroke:#22c55e,stroke-width:3px,fill:none
+    classDef eModeled   stroke:#f59e0b,stroke-width:3px,fill:none
+    classDef eAssumed   stroke:#ef4444,stroke-width:3px,fill:none
+    classDef eAbsent    stroke:#94a3b8,stroke-width:2px,fill:none
 
     subgraph SRC["1 · program image"]
         direction TB
@@ -11,18 +23,16 @@ flowchart TB
         RAW["raw 32-bit word"]:::modeled
         DEC["DecodedRv64im"]:::extracted
         ZI["ZiskInst row"]:::extracted
-        ELF -->|"riscv_interpreter"| RAW
-        RAW -->|"decode_32_core"| DEC
-        DEC -->|"lower_rv64im_<br/>single_row"| ZI
+        ELF e_fetch@-->|"riscv_interpreter"| RAW
+        RAW e_decode@-->|"decode_32_core"| DEC
+        DEC e_lower@-->|"lower_rv64im_<br/>single_row"| ZI
     end
 
     subgraph ROMB["2 · ROM build"]
         direction LR
-        MAP["ZiskRom BTreeMap"]:::absent
         AEN["Rv64imTranspile<br/>RowsExtract"]:::extracted
         ROMT["ROM table<br/>trace.program"]:::modeled
-        MAP -->|"RomSM::<br/>compute_trace_rom"| ROMT
-        AEN -->|"ProgramRows<br/>Binding"| ROMT
+        AEN e_progbind@-->|"ProgramRows<br/>Binding"| ROMT
     end
 
     subgraph WIT["3 · witness"]
@@ -31,9 +41,9 @@ flowchart TB
         MT["Main AIR row"]:::modeled
         OB["op-bus tuple"]:::modeled
         SEC["Binary / Arith rows"]:::modeled
-        EMU -->|"Emu::build_<br/>full_trace_step"| MT
-        MT -->|"opBus_row_Main"| OB
-        OB -->|"channels_balanced"| SEC
+        EMU e_buildrow@-->|"Emu::build_<br/>full_trace_step"| MT
+        MT e_opbus@-->|"opBus_row_Main"| OB
+        OB e_balance@-->|"channels_balanced"| SEC
     end
 
     subgraph CON["4 · constraints"]
@@ -42,33 +52,22 @@ flowchart TB
         PO["zisk.pilout"]:::absent
         EX["Extraction/*.lean"]:::extracted
         VA["Valid_&lt;AIR&gt;"]:::modeled
-        PIL -->|"pil2-compiler"| PO
-        PO -->|"pil-extract air"| EX
-        EX -->|"*MirrorWeld"| VA
+        PIL e_pilc@-->|"pil2-compiler"| PO
+        PO e_pilextract@-->|"pil-extract air"| EX
+        EX e_weld@-->|"*MirrorWeld"| VA
     end
 
-    ZI   -->|"insert_inst"| MAP
-    ZI   -->|"extract_transpile_<br/>rv64im_rows_raw"| AEN
-    MAP  -->|"Emu::step_fast"| EMU
-    ROMT -->|"mainWithRom"| MT
-    VA   -->|"Bridge.rowAt"| MT
+    %% TODO: MAP is never declared — give it a label and a :::class
+    ZI   e_instmap@-->|"insert_inst"| MAP
+    ZI   e_transpile@-->|"extract_transpile_<br/>rv64im_rows_raw"| AEN
+    MAP  e_stepfast@-->|"Emu::step_fast"| EMU
+    ROMT e_mainrom@-->|"mainWithRom"| MT
+    VA   e_bridge@-->|"Bridge.rowAt"| MT
 
-    linkStyle 0  stroke:#94a3b8,stroke-width:2px
-    linkStyle 1  stroke:#22c55e,stroke-width:3px
-    linkStyle 2  stroke:#22c55e,stroke-width:3px
-    linkStyle 3  stroke:#94a3b8,stroke-width:2px
-    linkStyle 4  stroke:#ef4444,stroke-width:3px
-    linkStyle 5  stroke:#94a3b8,stroke-width:2px
-    linkStyle 6  stroke:#f59e0b,stroke-width:3px
-    linkStyle 7  stroke:#ef4444,stroke-width:3px
-    linkStyle 8  stroke:#94a3b8,stroke-width:2px
-    linkStyle 9  stroke:#22c55e,stroke-width:3px
-    linkStyle 10 stroke:#f59e0b,stroke-width:3px
-    linkStyle 11 stroke:#94a3b8,stroke-width:2px
-    linkStyle 12 stroke:#22c55e,stroke-width:3px
-    linkStyle 13 stroke:#94a3b8,stroke-width:2px
-    linkStyle 14 stroke:#f59e0b,stroke-width:3px
-    linkStyle 15 stroke:#f59e0b,stroke-width:3px
+    %% arrow colours — by name, order does not matter
+    class e_decode,e_lower,e_pilextract,e_transpile eExtracted
+    class e_fetch,e_progbind,e_buildrow,e_opbus,e_balance,e_weld,e_mainrom,e_bridge eModeled
+    class e_pilc,e_instmap,e_stepfast eAbsent
 
     style SRC  fill:#f8fafc,stroke:#cbd5e1
     style ROMB fill:#f8fafc,stroke:#cbd5e1

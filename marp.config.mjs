@@ -32,9 +32,31 @@ const LEAN4_MARKDOWN = {
   patterns: [],
 }
 
+// The grammar paints declaration heads, keywords, literals and comments, and
+// leaves the body of a term alone -- in VS Code the Lean server fills that in,
+// and there is no server behind a slide fence. A snippet that is only a term
+// (no `theorem`, no `def`) therefore came out completely unpainted. These two
+// rules cover what a reader still wants to pick out of one: the logical
+// glyphs, and capitalised names, which in Lean are the types and namespaces.
+// They go last in `patterns`, so every rule of the real grammar outranks them,
+// and a comment or a string is already consumed before they are reached.
+const LEAN4_TERM_RULES = [
+  {
+    match: '(?:->|=>|:=|<->|→|↔|←|↦|⟹|∀|∃|λ|Σ|Π|∧|∨|¬|≠|≤|≥|∈|∉|⊆|∘|×|⊕)',
+    name: 'keyword.operator.lean4',
+  },
+  {
+    match: "\\b[A-Z][A-Za-z0-9_']*(?:\\.[A-Za-z_][A-Za-z0-9_']*)*",
+    name: 'support.type.lean4',
+  },
+]
+
+const leanGrammar = structuredClone(lean4[0])
+leanGrammar.patterns.push(...LEAN4_TERM_RULES)
+
 const shiki = await createHighlighter({
   themes: Object.values(THEMES),
-  langs: [LEAN4_MARKDOWN, ...lean4],
+  langs: [LEAN4_MARKDOWN, leanGrammar],
 })
 
 const LEAN = /^lean4?$/i

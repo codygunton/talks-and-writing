@@ -50,7 +50,7 @@ flowchart TB
         direction LR
         MT["Main AIR row"]:::modeled
         OB["op-bus tuple"]:::modeled
-        SEC["Binary / Arith rows"]:::modeled
+        SEC["op-bus providers<br/>Binary · BinaryAdd · BinaryExt<br/>ArithMul · ArithDiv"]:::modeled
         MT e_opbus@-->|"opBus_row_Main"| OB
         OB e_balance@-->|"channels_balanced"| SEC
     end

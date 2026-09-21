@@ -1,41 +1,47 @@
 %%{init: {"theme": "default", "themeVariables": {"primaryTextColor": "#334155", "lineColor": "#94a3b8", "fontSize": "15px"}}}%%
 flowchart TD
-    classDef extracted fill:#22c55e,stroke:#16a34a,color:#ffffff
-    classDef modeled   fill:#f59e0b,stroke:#d97706,color:#ffffff
-    classDef assumed   fill:#ef4444,stroke:#dc2626,color:#ffffff
-    classDef absent    fill:#94a3b8,stroke:#64748b,color:#ffffff
-    classDef proved    fill:#0c9fde,stroke:#0878a8,color:#ffffff
+    classDef extracted   fill:#22c55e,stroke:#16a34a,color:#ffffff
+    classDef modeled     fill:#f59e0b,stroke:#d97706,color:#ffffff
+    classDef premise     fill:#ef4444,stroke:#dc2626,color:#ffffff
+    classDef unspecified fill:#8b5cf6,stroke:#7c3aed,color:#ffffff
+    classDef absent      fill:#94a3b8,stroke:#64748b,color:#ffffff
+    classDef proved      fill:#0c9fde,stroke:#0878a8,color:#ffffff
 
     SAIL["model/*.sail<br/>146 files · 27,769 lines"]:::absent
     CFG["rv64d_v256_e64.json<br/>ZisK profile"]:::absent
     PRE["sail Lean prelude<br/>PreSailM · SequentialState"]:::extracted
-    EXTRAS["RiscvExtras.lean<br/>75 axioms"]:::assumed
+    EXTRAS["RiscvExtras.lean<br/>75 axioms · all data, no Prop"]:::unspecified
     GEN["LeanRV64D<br/>144 generated files · 144,023 lines"]:::extracted
     EXECR["LeanRV64D.Functions.execute<br/>instruction → SailM Result"]:::extracted
-    EXECI["execute_instruction<br/>fetch, then execute"]:::modeled
+    SAILSTEP["Sail's own step loop<br/>try_step · tick_pc"]:::extracted
+    STEP["step loop, rebuilt by hand<br/>execute_instruction · retirePC<br/>chainedSailStates"]:::modeled
     PURE["PureSpec.execute_&lt;OP&gt;_pure<br/>63 · no state monad"]:::modeled
-    RVA["RISC_V_assumptions<br/>platform profile"]:::assumed
+    RVA["RISC_V_assumptions<br/>platform premise"]:::premise
     BE["bus_effect<br/>bus rows → state update"]:::modeled
     ZISK["ZisK side<br/>exec-bus + mem-bus rows"]:::modeled
 
-    SAIL   -->|"sail --lean --all-modules<br/>(sail 0.20.1)"| GEN
-    CFG    -->|"--config"| GEN
-    PRE    -->|"shipped by sail<br/>+ v4.28 compat patch"| GEN
-    EXTRAS -->|"--lean-import-file"| GEN
-    GEN    --> EXECR
-    EXECR  -->|"nextPC := PC + 4<br/>SailSpec/Auxiliaries.lean:940"| EXECI
-    EXECI  -->|"PureSpec.*_pure_equiv<br/>63 proved"| PURE
-    RVA    -->|"hypothesis · 11 memory ops"| PURE
-    PURE   -->|"equiv_&lt;OP&gt;<br/>63 proved"| BE
-    ZISK   -->|"state_effect_via_channels"| BE
+    SAIL     -->|"sail --lean --all-modules<br/>(sail 0.20.1)"| GEN
+    CFG      -->|"--config"| GEN
+    PRE      -->|"shipped by sail<br/>+ v4.28 compat patch"| GEN
+    EXTRAS   -->|"--lean-import-file"| GEN
+    GEN      --> EXECR
+    GEN      -.->|"generated, never called"| SAILSTEP
+    SAILSTEP -.->|"NO theorem ties these"| STEP
+    EXECR    --> STEP
+    STEP     -->|"PureSpec.*_pure_equiv<br/>63 proved"| PURE
+    RVA      -->|"11 memory ops"| PURE
+    PURE     -->|"equiv_&lt;OP&gt;<br/>63 proved"| BE
+    ZISK     -->|"state_effect_via_channels"| BE
 
-    linkStyle 0 stroke:#22c55e,stroke-width:3px
-    linkStyle 1 stroke:#22c55e,stroke-width:3px
-    linkStyle 2 stroke:#22c55e,stroke-width:3px
-    linkStyle 3 stroke:#22c55e,stroke-width:3px
-    linkStyle 4 stroke:#22c55e,stroke-width:3px
-    linkStyle 5 stroke:#f59e0b,stroke-width:3px
-    linkStyle 6 stroke:#0c9fde,stroke-width:3px
-    linkStyle 7 stroke:#ef4444,stroke-width:3px
-    linkStyle 8 stroke:#0c9fde,stroke-width:3px
-    linkStyle 9 stroke:#f59e0b,stroke-width:3px
+    linkStyle 0  stroke:#22c55e,stroke-width:3px
+    linkStyle 1  stroke:#22c55e,stroke-width:3px
+    linkStyle 2  stroke:#22c55e,stroke-width:3px
+    linkStyle 3  stroke:#8b5cf6,stroke-width:3px
+    linkStyle 4  stroke:#22c55e,stroke-width:3px
+    linkStyle 5  stroke:#94a3b8,stroke-width:2px
+    linkStyle 6  stroke:#ef4444,stroke-width:3px
+    linkStyle 7  stroke:#f59e0b,stroke-width:3px
+    linkStyle 8  stroke:#0c9fde,stroke-width:3px
+    linkStyle 9  stroke:#ef4444,stroke-width:3px
+    linkStyle 10 stroke:#0c9fde,stroke-width:3px
+    linkStyle 11 stroke:#f59e0b,stroke-width:3px

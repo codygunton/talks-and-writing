@@ -165,7 +165,7 @@ section blockquote p {
 section table {
   border-collapse: collapse;
   width: 100%;
-  font-size: 0.9em;
+  font-size: 0.62em;
 }
 
 section table th {
@@ -173,18 +173,31 @@ section table th {
   color: var(--heading);
   font-family: 'Space Grotesk', sans-serif;
   font-weight: 500;
-  padding: 0.6em 1em;
+  padding: 0.35em 0.6em;
   text-align: left;
   border-bottom: 2px solid var(--primary);
 }
 
 section table td {
-  padding: 0.5em 1em;
+  padding: 0.3em 0.6em;
   border-bottom: 1px solid var(--border);
 }
 
 section table tr:nth-child(even) {
   background: rgba(12, 159, 222, 0.03);
+}
+
+/* ---- Scrollable, centred table block ---- */
+section .scroll-table {
+  display: block;
+  max-height: 560px;
+  overflow-y: auto;
+  margin: 0 auto;
+}
+
+section .scroll-table > table {
+  width: auto;
+  margin: 0 auto;
 }
 
 /* ---- Images ---- */

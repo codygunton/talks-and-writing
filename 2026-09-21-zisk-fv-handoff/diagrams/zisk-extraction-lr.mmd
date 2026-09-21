@@ -1,0 +1,60 @@
+%%{init: {"theme": "default", "themeVariables": {"primaryTextColor": "#334155", "lineColor": "#94a3b8", "fontSize": "15px"}}}%%
+flowchart LR
+    classDef extracted fill:#22c55e,stroke:#16a34a,color:#ffffff
+    classDef modeled   fill:#f59e0b,stroke:#d97706,color:#ffffff
+    classDef assumed   fill:#ef4444,stroke:#dc2626,color:#ffffff
+    classDef absent    fill:#94a3b8,stroke:#64748b,color:#ffffff
+
+    ELF["ELF bytes"]:::absent
+    RAW["raw 32-bit word"]:::modeled
+    DEC["DecodedRv64im"]:::extracted
+    ZI["ZiskInst row<br/>ZiskInstExtract"]:::extracted
+    MAP["ZiskRom BTreeMap"]:::absent
+    AEN["Rv64imTranspileRowsExtract<br/>first_row / last_row"]:::extracted
+    ROMT["ROM table<br/>trace.program"]:::modeled
+    EMU["EmuTrace"]:::absent
+    MT["Main AIR row"]:::modeled
+    OB["op-bus tuple"]:::modeled
+    SEC["Binary / Arith rows"]:::modeled
+    PIL["*.pil"]:::absent
+    PO["zisk.pilout"]:::absent
+    EX["Extraction/*.lean"]:::extracted
+    VA["Valid_&lt;AIR&gt;"]:::modeled
+
+    ELF  -->|"riscv::riscv_interpreter"| RAW
+    RAW  -->|"riscv::decode_32_core"| DEC
+    DEC  -->|"Riscv2ZiskContext::<br/>lower_rv64im_single_row"| ZI
+
+    ZI   -->|"Riscv2ZiskContext::insert_inst"| MAP
+    MAP  -->|"RomSM::compute_trace_rom"| ROMT
+
+    ZI   -->|"aeneas_extract::<br/>extract_transpile_rv64im_rows_raw"| AEN
+    AEN  -->|"RawProgramBinding.<br/>ProgramRowsBinding"| ROMT
+
+    MAP  -->|"Emu::step_fast"| EMU
+    EMU  -->|"Emu::build_full_trace_step"| MT
+    ROMT -->|"AirsClean.Main.mainWithRom"| MT
+    MT   -->|"OperationBus.opBus_row_Main"| OB
+    OB   -->|"AcceptedZiskTrace.<br/>channels_balanced"| SEC
+
+    PIL  -->|"pil2-compiler"| PO
+    PO   -->|"pil-extract air"| EX
+    EX   -->|"AirsClean.*MirrorWeld"| VA
+    VA   -->|"AirsClean.Main.Bridge.rowAt"| MT
+
+    linkStyle 0  stroke:#94a3b8,stroke-width:2px
+    linkStyle 1  stroke:#22c55e,stroke-width:3px
+    linkStyle 2  stroke:#22c55e,stroke-width:3px
+    linkStyle 3  stroke:#94a3b8,stroke-width:2px
+    linkStyle 4  stroke:#94a3b8,stroke-width:2px
+    linkStyle 5  stroke:#22c55e,stroke-width:3px
+    linkStyle 6  stroke:#ef4444,stroke-width:3px
+    linkStyle 7  stroke:#94a3b8,stroke-width:2px
+    linkStyle 8  stroke:#94a3b8,stroke-width:2px
+    linkStyle 9  stroke:#f59e0b,stroke-width:3px
+    linkStyle 10 stroke:#f59e0b,stroke-width:3px
+    linkStyle 11 stroke:#ef4444,stroke-width:3px
+    linkStyle 12 stroke:#94a3b8,stroke-width:2px
+    linkStyle 13 stroke:#22c55e,stroke-width:3px
+    linkStyle 14 stroke:#f59e0b,stroke-width:3px
+    linkStyle 15 stroke:#f59e0b,stroke-width:3px

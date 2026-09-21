@@ -1,0 +1,90 @@
+%%{init: {"theme": "default", "themeVariables": {"primaryTextColor": "#334155", "lineColor": "#94a3b8", "fontSize": "12px"}}}%%
+%% EDITING THIS FILE
+%%   Every arrow carries a name:   A e_foo@-->|"label"| B
+%%   Colour is set by name at the bottom, never by position.
+%%   Rule: an arrow takes the colour of the node it points AT.
+%%   Check your edit with:  node ../../check-mmd.mjs
+flowchart TB
+    %% node palette
+    classDef extracted fill:#22c55e,stroke:#16a34a,color:#ffffff
+    classDef modeled   fill:#f59e0b,stroke:#d97706,color:#ffffff
+    classDef absent    fill:#94a3b8,stroke:#64748b,color:#ffffff
+
+    %% arrow palette — same colours, fill:none so the curve is not filled
+    classDef eExtracted stroke:#22c55e,stroke-width:3px,fill:none
+    classDef eModeled   stroke:#f59e0b,stroke-width:3px,fill:none
+    classDef eAbsent    stroke:#94a3b8,stroke-width:2px,fill:none
+    %% `marker-end:none` suppresses the far arrowhead of a `<-->` edge, so it
+    %% renders as a single arrow pointing back at the declared SOURCE.
+    classDef eModeledUp stroke:#f59e0b,stroke-width:3px,fill:none,marker-end:none
+
+    %% 1 and 2 sit side by side inside an unlabelled band.
+    %% Its `direction LR` only survives while no NODE-level edge
+    %% crosses the band boundary — that is why the arrow out of it
+    %% below is drawn cluster-to-cluster (ROMB --> WIT).
+    subgraph TOP[" "]
+    direction LR
+    subgraph SRC["1 · program image"]
+        direction LR
+        ELF["ELF bytes"]:::absent
+        RAW["rawProgram :<br/>Fin n → BitVec 32"]:::modeled
+        DEC["DecodedRv64im"]:::extracted
+        ZI["ZiskInst row"]:::extracted
+        ELF e_fetch@-->|"collect_elf_payload +<br/>convert_vector"| RAW
+        RAW e_decode@-->|"decode_32_core"| DEC
+        DEC e_lower@-->|"lower_rv64im_<br/>single_row"| ZI
+    end
+
+    subgraph ROMB["2 · ROM build"]
+        direction LR
+        AEN["Rv64imTranspile<br/>RowsExtract"]:::extracted
+        ROMT["ROM table<br/>trace.program"]:::modeled
+        AEN e_progbind@-->|"ProgramRows<br/>Binding"| ROMT
+    end
+    ZI e_transpile@-->|"extract_transpile_<br/>rv64im_rows_raw"| AEN
+    end
+
+    subgraph WIT["3 · witness"]
+        direction LR
+        MT["Main AIR row"]:::modeled
+        OB["op-bus tuple"]:::modeled
+        SEC["op-bus providers<br/>Binary · BinaryAdd · BinaryExt<br/>ArithMul · ArithDiv"]:::modeled
+        MT e_opbus@-->|"opBus_row_Main"| OB
+        OB e_balance@-->|"channels_balanced"| SEC
+    end
+
+    subgraph CON["4 · constraints"]
+        direction LR
+        PIL["*.pil"]:::absent
+        PO["zisk.pilout"]:::absent
+        EX["Extraction/*.lean"]:::extracted
+        VA["Valid_&lt;AIR&gt;"]:::modeled
+        PIL e_pilc@-->|"pil2-compiler"| PO
+        PO e_pilextract@-->|"pil-extract air"| EX
+        EX e_weld@-->|"*MirrorWeld"| VA
+    end
+
+    %% Both of these are CLUSTER-level on purpose. A subgraph keeps its
+    %% `direction` only while none of its NODES is an endpoint of an edge
+    %% crossing its boundary -- so `ROMB --> WIT` would stack 1 above 2, and
+    %% `VA --> WIT` would stack subgraph 4 vertically.
+    %% e_bridge is DECLARED WIT -> CON so that 4 ranks below 3 and keeps its
+    %% `direction LR`. It is drawn `<-->` and given `eModeledUp`, whose
+    %% `marker-end:none` removes the arrowhead at the CON end -- so it renders
+    %% as a single arrow pointing UP from 4 into 3, the real Bridge.rowAt
+    %% direction (`AirsClean/Main/Bridge.lean:34`: Valid_Main -> MainRow).
+    %% Mermaid has no plain up-arrow; only `<-->` carries a start marker.
+    TOP e_mainrom@-->|"mainWithRom"| WIT
+    WIT e_bridge@<-->|"Bridge.rowAt"| CON
+
+    %% arrow colours — by name, order does not matter
+    class e_decode,e_lower,e_pilextract,e_transpile eExtracted
+    class e_fetch,e_progbind,e_opbus,e_balance,e_weld,e_mainrom eModeled
+    class e_bridge eModeledUp
+    class e_pilc eAbsent
+
+    style TOP  fill:none,stroke:none
+    style SRC  fill:#f8fafc,stroke:#cbd5e1
+    style ROMB fill:#f8fafc,stroke:#cbd5e1
+    style WIT  fill:#f8fafc,stroke:#cbd5e1
+    style CON  fill:#f8fafc,stroke:#cbd5e1

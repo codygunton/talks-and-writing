@@ -25,8 +25,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: npm
 
-      - run: npm install -g @marp-team/marp-cli
+      # Installs marp-cli plus the shiki highlighter that the repo-root
+      # marp.config.mjs registers for Lean 4 fences. A global marp-cli would
+      # not resolve those, so the config must run against this local tree.
+      - run: npm ci
 
       - name: Restore previous build
         uses: actions/cache@v4
@@ -53,6 +57,7 @@ jobs:
             "2026-06-26-ethproofs9"
             "2026-07-08-zkevm-breakout"
             "2026-08-12-zkevm-breakout"
+            "2026-09-21-zisk-fv-handoff"
           )
 
           # Find the commit of the last successful deploy (from cache key)
@@ -64,7 +69,7 @@ jobs:
                git diff --name-only "$PREV_SHA" HEAD -- "$dir/" "themes/" | grep -q .; then
               echo "Building $dir..."
               mkdir -p "_site/$dir"
-              marp "$dir/slides.md" \
+              npx marp "$dir/slides.md" \
                 --theme-set themes/ \
                 --html \
                 -o "_site/$dir/index.html"
@@ -113,6 +118,7 @@ jobs:
               <li><a href="2026-06-26-ethproofs9/">EthProofs Call #9: Formal Verification (Jun 2026)</a></li>
               <li><a href="2026-07-08-zkevm-breakout/">zkEVM Breakout (Jul 2026)</a></li>
               <li><a href="2026-08-12-zkevm-breakout/">zkEVM Breakout (Aug 2026)</a></li>
+              <li><a href="2026-09-21-zisk-fv-handoff/">ZisK-FV Handoff (Sep 2026)</a></li>
             </ul>
           </body>
           </html>

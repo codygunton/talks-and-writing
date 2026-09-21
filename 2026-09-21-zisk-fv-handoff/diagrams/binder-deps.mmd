@@ -1,0 +1,63 @@
+%%{init: {"theme": "default", "themeVariables": {"primaryTextColor": "#334155", "lineColor": "#94a3b8", "fontSize": "13px"}}}%%
+%% Binder dependency graph for root_soundness.
+%% Generated from trust/generated/baseline-strong-export-binders.txt:
+%% an edge A --> B means B's TYPE mentions A.
+%% Node colour is the binder's kind. Arrows are named, never styled by position.
+flowchart TD
+    %% node palette
+    classDef data  fill:#94a3b8,stroke:#64748b,color:#ffffff
+    classDef mixed fill:#f59e0b,stroke:#d97706,color:#ffffff
+    classDef hyp   fill:#ef4444,stroke:#dc2626,color:#ffffff
+
+    %% arrow palette
+    classDef eDep  stroke:#94a3b8,stroke-width:2px,fill:none
+    classDef eLeak stroke:#dc2626,stroke-width:3px,fill:none
+
+    subgraph given["supplied data"]
+        direction TB
+        trace["ziskTrace"]:::mixed
+        step["ziskStep"]:::data
+        init["init"]:::data
+        image["start · addr · rawProgram"]:::data
+    end
+
+    bind["programBinding"]:::hyp
+    decs["rawProgramDecodes"]:::hyp
+    rows["rowsAligned"]:::hyp
+    inp["inputsAgree"]:::mixed
+    seed["bootSeed"]:::mixed
+    pcb["pcBoot"]:::hyp
+    regb["regBoot"]:::hyp
+    bugs["hAvoidKnownBugs"]:::hyp
+
+    trace e_t_bind@--> bind
+    trace e_t_decs@--> decs
+    trace e_t_rows@--> rows
+    trace e_t_inp@--> inp
+    trace e_t_seed@--> seed
+    trace e_t_pcb@--> pcb
+    trace e_t_bugs@--> bugs
+
+    step e_s_decs@--> decs
+    step e_s_rows@--> rows
+    step e_s_inp@--> inp
+    step e_s_seed@--> seed
+    step e_s_bugs@--> bugs
+
+    init e_i_inp@--> inp
+    init e_i_seed@--> seed
+    init e_i_pcb@--> pcb
+    init e_i_regb@--> regb
+
+    image e_m_bind@--> bind
+    image e_m_decs@--> decs
+    image e_m_rows@--> rows
+
+    bind e_leak_bind@-->|"leak"| rows
+    decs e_leak_decs@-->|"leak"| rows
+
+    class e_t_bind,e_t_decs,e_t_rows,e_t_inp,e_t_seed,e_t_pcb,e_t_bugs eDep
+    class e_s_decs,e_s_rows,e_s_inp,e_s_seed,e_s_bugs eDep
+    class e_i_inp,e_i_seed,e_i_pcb,e_i_regb eDep
+    class e_m_bind,e_m_decs,e_m_rows eDep
+    class e_leak_bind,e_leak_decs eLeak

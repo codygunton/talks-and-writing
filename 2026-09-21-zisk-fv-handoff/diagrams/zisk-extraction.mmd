@@ -29,10 +29,10 @@ flowchart TB
     subgraph SRC["1 · program image"]
         direction LR
         ELF["ELF bytes"]:::absent
-        RAW["raw 32-bit word"]:::modeled
+        RAW["rawProgram :<br/>Fin n → BitVec 32"]:::modeled
         DEC["DecodedRv64im"]:::extracted
         ZI["ZiskInst row"]:::extracted
-        ELF e_fetch@-->|"riscv_interpreter"| RAW
+        ELF e_fetch@-->|"collect_elf_payload +<br/>convert_vector"| RAW
         RAW e_decode@-->|"decode_32_core"| DEC
         DEC e_lower@-->|"lower_rv64im_<br/>single_row"| ZI
     end

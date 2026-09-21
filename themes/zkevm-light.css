@@ -190,7 +190,7 @@ section table tr:nth-child(even) {
 /* ---- Scrollable, centred table block ---- */
 section .scroll-table {
   display: block;
-  max-height: 560px;
+  max-height: 585px;
   overflow-y: auto;
   margin: 0 auto;
 }

@@ -70,7 +70,7 @@ Eventually: handle precompiles and recursion circuits as well.
 <div style="flex:1">
 
 **ZisK v0.17.0**
-    
+
 **Lean 4.28.0**, mathlib pinned to the same
 
 **238,600 lines** of Lean, comments and blanks excluded (297k raw, 780 files) — 6,263 theorems and lemmas
@@ -82,39 +82,42 @@ Eventually: handle precompiles and recursion circuits as well.
 </div>
 <div style="flex:1">
 
-One 15.6 GiB self-hosted x64 runner, `LEAN_NUM_THREADS=4`:
+One self-hosted x64 runner, `LEAN_NUM_THREADS=4`. From a clean checkout:
 
-- **6.5 to extract** — Sail spec, ZisK pilout and Lean constraints built from
-  pinned source. 40s when those three come prebuilt from Cachix.
-- **21 min to prove soundness** — peak mem. 5.7 GiB
-- 50 min for the whole gate, incl. the 25 min semantic trust gate
+- **6m 33s to extract** — Sail spec, ZisK pilout and Lean constraints, built
+  from pinned source
+- **43 min to prove soundness** — `lake build`, 9,139 jobs, peak 12.9 GiB
+- plus **25 min** for the trust gate, and **11m 21s** for the Aeneas harness
+  in a parallel job (+39 min for its coverage check)
+
+Warm, which is what CI does per push: 40s and 21 min.
 
 </div>
 </div>
 
-<img src="assets/loc-activity.svg" alt="Lines added and removed per day on main, April to September 2026" style="width:100%;margin-top:0.6em">
+<img src="assets/loc-activity.svg" alt="Lines added and removed per day on main, April to September 2026" style="width:100%;margin-top:0.1em">
 
 ---
 
 # High-level: status
 
-- Conditional soundness theorem, partially hardened, untested in upgrades, 4-5 months behind zisk
+- Conditional soundness theorem, partially hardened, untested in upgrades, 4-5 months behind ZisK
   releases.
 - Need to upstream fork work
 - Still under development. This is hard work. Every other foo-fv we've looked at has serious issues,
   does less, and so far we see no indication of ongoing maintenance.
-- Started as an experiment and that is apparent! But I've also put a lot of cycles in to building it
+- Started as an experiment and that is apparent! But I've also put a lot of cycles into building it
   out and hardening it. A little bit of effort into clarifying it.
 
 ---
 
-# Trusted Code Base (TCB)
+# Trusted Computing Base (TCB)
 
 <div style="font-size:0.88em">
 
 **0** axioms of our own, **0** `sorry`
 
-`root_soundness`' closure is then exactly **77**:
+The closure of `root_soundness` is then exactly **77**:
 
 - **5 from Lean** — `propext`, `Quot.sound`, `Classical.choice`, plus `ofReduceBool` and
   `trustCompiler`, which enter from exactly **3** `bv_decide` lemmas.
@@ -123,7 +126,7 @@ One 15.6 GiB self-hosted x64 runner, `LEAN_NUM_THREADS=4`:
   `Prop` — functions into inhabited types, which is conservative — and all 72 arrive through
   `execute`, whose 343 arms name every instruction.
 
-But note: explicit hypotheses are fed to the soundness theorem that make it conditional.
+But note: the soundness theorem takes explicit hypotheses, and those make it conditional.
 
 </div>
 
@@ -149,7 +152,7 @@ We turn code that's not in Lean into Lean and then write proofs about it.
 
 ---
 
-# Extraction & modeling: zisk side
+# Extraction & modeling: ZisK side
 
 Subclaims:
 
@@ -157,12 +160,12 @@ Subclaims:
 - The input data is correctly executed against the ROM
 - The AIR relations are applied against the ROM
 
-To evaluate these claims we need to translation the ROM construction, the execution, and the actual
-circuit arithmetic into Lean
+To evaluate these claims we need to translate the ROM construction, the execution, and the actual
+circuit arithmetic into Lean.
 
 ---
 
-# Extraction & modeling: zisk side
+# Extraction & modeling: ZisK side
 
 <div data-mermaid="diagrams/zisk-extraction.mmd" style="height:78%"></div>
 
@@ -172,6 +175,11 @@ circuit arithmetic into Lean
 
 # Extraction & modeling: reference
 
+<style scoped>
+table th, table td { padding: 0.12em 0.45em; line-height: 1.15; }
+table { font-size: 0.55em; }
+</style>
+
 | what | status | where |
 | --- | --- | --- |
 | RV64IM decode, `decode_32_core` | extracted | extractor `aeneas_extract.rs:353` → result `trust/aeneas/ProductionM2.lean` |
@@ -180,18 +188,18 @@ circuit arithmetic into Lean
 | polynomial constraints of the ten in-scope AIRs | extracted | extractor `pil-extract air` (`nix/extracted-lean.nix`) → result `build/extraction/Extraction/<AIR>.lean` |
 | ROM table, eleven columns | modeled | prod `rom.pil` → model `ZiskRomMessage`, `Channels/ZiskRomBus.lean:58` |
 | Main AIR row plus its ROM companion | modeled | prod `main.pil` → model `MainRowWithRom`, `AirsClean/Main/Row.lean:127` |
-| op-bus emission — **no weld** | modeled | prod `main.pil:367` → model `opBus_row_Main`, `OperationBus.lean:62` |
-| ROM lookup, Main consumes an instruction | modeled | prod `main.pil:490` → model `Main/Constraints.lean:266` |
+| op-bus emission — **no weld** | modeled | prod `main.pil:367` → model `opBus_row_Main`, `Airs/OperationBus/OperationBus.lean:60` |
+| ROM lookup, Main consumes an instruction | modeled | prod `main.pil:490` → model `romMessageExpr`, `AirsClean/Main/Constraints.lean:159` |
 | the five op-bus provider rows | modeled | prod `binary.pil`, `binary_add.pil`, `binary_extension.pil`, `arith.pil` → model `Binary/Row.lean:78`, `ArithMul/Row.lean:81`, and siblings |
-| every AIR's constraint mirror | modeled | prod the generated polynomials → model `ZiskFv/Airs/`, welded by `AirsClean/*MirrorWeld.lean` |
+| each AIR's constraint mirror | modeled | prod the generated polynomials → model `ZiskFv/Airs/`, welded by `AirsClean/*MirrorWeld.lean` — 9 of the 10 extracted AIRs; `BinaryExtension` has none, and within a welded AIR only some constraints are named ([#368](https://github.com/eth-act/zisk-fv/issues/368)) |
 | ROM layout: address order, no gaps, adjacent JALR slots | **premise** | `ProgramRowsBinding`, `RawProgramBinding.lean:172` — an extra binder of `root_soundness`; no verifier checks it. Row content is extracted, via `romRowOf:103`; only the layout is assumed. |
-| every bus balances — sent multiset equals received | **antecedent** | `AcceptedZiskTrace.channels_balanced`, `AcceptedZiskTrace.lean:93` — part of what “accepted” means, established by the logUp argument |
+| every bus balances — sent multiset equals received | **antecedent** | `AcceptedZiskTrace.channels_balanced`, `AcceptedZiskTrace.lean:100` — part of what “accepted” means, established by the logUp argument |
 
 ---
 
-# Modeling: zisk side, and the welds
+# Modeling: ZisK side, and the welds
 
-A bit of historical tech debt: `root_soundness` is about hand-written Clean circuits, and the relationship to the extracted circuits is proven externally. We refer to the linking theorems as "welds". They look like this
+A bit of historical tech debt: `root_soundness` is about hand-written Clean circuits, and the relationship to the extracted circuits is proven externally. We refer to the linking theorems as "welds". They look like this:
 
 ```lean
 theorem constraint_2_weld (row : MainRowWithRom FGL) :     -- main.pil:197
@@ -216,13 +224,13 @@ Improving this story is an active workstream.
 
 # Extraction: spec side
 
-The is a canonical Lean backend to Sail. Result:
+There is a canonical Lean backend for Sail. Result:
 
 **146 `.sail` files · 27,769 lines → 149 `.lean` files · 145,355 lines.**
 
-Two parts of Sail Lean package hand-written upstream, not generated:
+Two parts of the Sail Lean package are hand-written upstream, not generated:
 
-- `LeanRV64D/Sail/*.lean` — 1,215 lines, sail's prelude: the monad and `SequentialState`
+- `LeanRV64D/Sail/*.lean` — 1,215 lines, Sail's prelude: the monad and `SequentialState`
 - `LeanRV64D/RiscvExtras.lean` — 117 lines, sail-riscv's **75 axioms**, all data-valued
 
 <!-- Third: our nix/sail-lean-v4.28-compat.patch, because that prelude targets a Lean
@@ -256,13 +264,13 @@ Only loads and stores reach Sail's memory checks, so only those 11 opcodes carry
 
 # Modeling: spec side
 
-`ZiskFv/SailSpec/` — 63 opcode files (7,536 lines), plus `Auxiliaries.lean` (996, the
+`ZiskFv/SailSpec/` — 63 opcode files (7,536 lines), plus `Auxiliaries.lean` (996 lines, the
 platform theorems and the monad rewriting).
 
 Each opcode file does two jobs:
 
 1. **restate** the opcode as `PureSpec.execute_<shape>_<op>_pure`, a pure
-   `Input → Output` function — no dispatch, and the trap arms the profile kills are gone;
+   `Input → Output` function — no dispatch, and the trap arms the profile rules out are gone;
 2. **prove** `execute_<shape>_<op>_pure_equiv`, which pins that restatement to the real
    `execute`.
 
@@ -332,6 +340,11 @@ theorem root_soundness
 
 # Root theorem inputs
 
+<style scoped>
+section pre { padding: 0.7em 1.1em; }
+section pre code { font-size: 0.95em; line-height: 1.32; }
+</style>
+
 ```lean
 theorem root_soundness
     (numInstructions rawLength : Nat)
@@ -379,10 +392,10 @@ statement needs two other hypotheses
 # How to read the input list
 
 <style scoped>
-table th, table td { padding: 0.30em 0.7em; }
+table th, table td { padding: 0.12em 0.7em; }
 </style>
 
-<div class="scroll-table" style="font-size: 0.84em">
+<div class="scroll-table" style="font-size: 0.88em">
 
 | binder              | type       | what                           | to discharge                                                 |
 | ------------------- | ---------- | ------------------------------ | ------------------------------------------------------------ |
@@ -390,7 +403,7 @@ table th, table td { padding: 0.30em 0.7em; }
 | `rawLength`         | data       | how many words in the program  | —                                                            |
 | `ziskTrace`         | mixed      | the filled circuit tables      | have a real accepted ZisK proof                              |
 | `init`              | data       | the Sail state at step 0       | —                                                            |
-| `ziskStep`          | data       | which operation each step is   | nothing — 9 and 10 must back the choice                      |
+| `ziskStep`          | data       | which operation each step is   | nothing — `programBinding` and `rawProgramDecodes` back it   |
 | `start`             | data       | word k's first ROM row         | —                                                            |
 | `addr`              | data       | word k's address               | —                                                            |
 | `rawProgram`        | data       | word k's 32 raw bits           | —                                                            |
@@ -542,9 +555,9 @@ def StepSound
 
 
 1. `ziskTrace` — the satisfied circuits
-2. `sailTrace`, computed as `chainedSailTrace ziskStep init` — the execution trace of spec machine
+2. `sailTrace`, computed as `chainedSailTrace ziskStep init` — the execution trace of the spec machine
 3. `ziskStep` — when evaluated on `i`, which of the 63 considered instructions this step claims to be.
-   It's tech debt that this is used to calculate the `sailTrace`; see ([#397](https://github.com/eth-act/zisk-fv/issues/397)).
+   It's tech debt that this is used to calculate the `sailTrace`; see [#397](https://github.com/eth-act/zisk-fv/issues/397).
 4. `rd : RowDecode` — the bundle of facts saying this Main row really is a well-formed instance
    of that op: its `op` column, its flag columns, its operand-source columns, and for JALR which
    row or rows the instruction occupies. It lands in `Type`, not `Prop`: a decode is evidence,
@@ -589,7 +602,7 @@ section pre { padding: 0.9em 1.2em; }
 <!-- _class: lead -->
 <!-- _paginate: false -->
 
-# Root soundness theorem: claim
+# Root soundness theorem: proof
 
 <div style="text-align: left">
 
@@ -616,7 +629,7 @@ abstract row of field elements.
 1. **Extract both sides.** `LeanRV64D` from Sail; `Extraction/*.lean` from the pilout.
 2. **Name the constraints.** Hand-written `AirsClean/` components and `Valid_<AIR>` predicates,
    welded to the generated polynomials at build time.
-3. **Normalize the Sail side.** 63 pure `PureSpec.execute_<OP>_pure` functions, each pinned to
+3. **Normalize the Sail side.** 63 pure `PureSpec.execute_…_pure` functions, each pinned to
    the real `execute` by a proved lemma (`ZiskFv/SailSpec/`).
 4. **One opcode, one equation.** `equiv_<OP>` says the Sail step equals `bus_effect` of that
    opcode's bus rows. `EquivCore/` → `Compliance/Wrappers/` → `Equivalence/`, 63 each.
@@ -653,16 +666,16 @@ My hope: collaboration with both sides dedicating human and AI resources
   upgradability and inclusion in CI.
 - Medium term: I ramp down and keep track of the project, possibly picking up tasks if it's helpful,
   as you all integrate into the dev process (goal: nightly CI).
-- Long term: I stay on as a co-owner but development is mainly driven by you. I conduct period
+- Long term: I stay on as a co-owner but development is mainly driven by you. I conduct periodic
   audits.
 
 ---
 
 # Where to start?
 
-Some possibilities
+Some possibilities:
  - Look at https://github.com/eth-act/zisk-fv/issues
- - Look at `aeneas_extract` lines in zisk fork and investigate extractability and performance implications
+ - Look at `aeneas_extract` lines in the ZisK fork and investigate extractability and performance implications
  - Try to convince yourself that the root theorem statement is actually the statement we care about proving, and that the binders are models of reality.
  - Red team with your agent
 

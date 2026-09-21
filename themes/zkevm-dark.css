@@ -140,6 +140,13 @@ section pre code {
   font-size: 0.82em;
 }
 
+/* Lean 4 fences are painted by shiki, not highlight.js -- see the engine in
+   `marp.config.mjs`. Shiki emits both palettes on every token as custom
+   properties and no `color` of its own, so the theme picks one. */
+section pre code .shiki span {
+  color: var(--shiki-dark);
+}
+
 /* ---- Blockquote ---- */
 section blockquote {
   border-left: 4px solid var(--primary);

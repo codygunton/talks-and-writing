@@ -9,6 +9,6 @@
   "devDependencies": {
     "@marp-team/marp-cli": "^4.2.0",
     "@marp-team/marp-core": "^4.4.0",
-    "highlightjs-lean": "^1.2.0"
+    "shiki": "^4.4.3"
   }
 }

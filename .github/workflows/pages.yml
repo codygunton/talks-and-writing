@@ -27,9 +27,9 @@ jobs:
           node-version: 20
           cache: npm
 
-      # Installs marp-cli plus the Lean highlight.js grammar that the
-      # repo-root marp.config.mjs registers. A global marp-cli would not
-      # resolve those, so the config must run against this local tree.
+      # Installs marp-cli plus the shiki highlighter that the repo-root
+      # marp.config.mjs registers for Lean 4 fences. A global marp-cli would
+      # not resolve those, so the config must run against this local tree.
       - run: npm ci
 
       - name: Restore previous build

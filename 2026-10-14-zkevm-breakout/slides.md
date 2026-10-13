@@ -27,13 +27,26 @@ https://codygunton.github.io/talks-and-writing/2026-10-14-zkevm-breakout/
 
 ---
 
+# Testing of Standards
+
+[zkevm-test-monitor:#35](https://github.com/eth-act/zkevm-test-monitor/pull/35) testing of [zkevm-standards](https://github.com/eth-act/zkevm-standards/) beyond ISA compliance.
+
+ - Current coverage: [accelerator interface](https://github.com/eth-act/zkevm-standards/tree/main/standards/c-interface-accelerators), [accelerated memory interface](https://github.com/eth-act/zkevm-standards/tree/main/standards/accelerated-memory-operations) and [I/O](https://github.com/eth-act/zkevm-standards/tree/main/standards/io-interface).
+ - Proposed expectation: standards should come with a suite of tests
+
+<iframe src="https://eth-act.github.io/zkevm-test-monitor/" style="width:100%;flex:1;border:1px solid #e2e8f0;border-radius:6px;"></iframe>
+
+---
+
 # Hash collision mitigations in guests
 
-@LukaszRozmej of Nethermind [described](https://github.com/ethereum/EIPs/pull/12286) a DoS attack on 8025 provers. He makes the case for zkVMs to provide a per-proof construction source of randomness as the solution this security problem [here](https://github.com/ethereum/EIPs/pull/12289).
+[@LukaszRozmej of Nethermind described](https://github.com/ethereum/EIPs/pull/12286) a DoS attack on 8025 provers. He makes the case for zkVMs to provide a per-proof construction source of randomness as the solution this security problem [here](https://github.com/ethereum/EIPs/pull/12289).
 
  - Seeding with `new_payload_request_root` was proposed as a mitigation, but it is not a complete solution.
  - FOCIL undermines the "builder won't DoS itself" rationale that this is issue goes away if we adopt "prover killer killer" strategy in an eventual mandatory proofs spec.
- - Standards proposal [#something](): hosts could provide access to sampling unconstrained randomness.
+ - [zkevm-standards:#42](https://github.com/eth-act/zkevm-standards/pull/42): hosts provides unconstrained randomness.
+ - [zkevm-test-monitor:49](https://github.com/eth-act/zkevm-test-monitor/pull/49): accompanying tests
+ - [openvm:3165](https://github.com/openvm-org/openvm/pull/3165): demo implementation for OpenVM
 
 ---
 

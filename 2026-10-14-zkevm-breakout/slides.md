@@ -55,23 +55,23 @@ https://codygunton.github.io/talks-and-writing/2026-10-14-zkevm-breakout/
 https://github.com/eth-act/zisk-fv
 
 Additional strengthening of zisk-fv:
+ - Infra for stress testing: does changing constraints cause the lean build to fail.
+ - zisk-fv:[#356](https://github.com/eth-act/zisk-fv/pull/356)-[#359](https://github.com/eth-act/zisk-fv/pull/359) remove ~500 assumptions on register operand columns
+ - zisk-fv:[#377](https://github.com/eth-act/zisk-fv/pull/377)-[#390](https://github.com/eth-act/zisk-fv/pull/390) additional "welds" tying extracted constraints to a hand-built model (IOU tech debt cleanup)
+
+Handoff meeting with ZisK team regarding integration into a broader fv program.
 
 ---
 
 # Soundcalc
 
-STIR support will land in [#90](https://github.com/ethereum/soundcalc/pull/90), which is already approved by Benedict Wagner.
+STIR support landed in [#90](https://github.com/ethereum/soundcalc/pull/90).
+
+
+There is also progress on a Lean version of Soundcalc.
 
 ---
 
-# Improvements in Verified-zkEVM libraries
-
-- [CompPoly](https://github.com/Verified-zkEVM/CompPoly):
-- [ArkLib](https://github.com/Verified-zkEVM/ArkLib):
-
-<!-- TODO: this month's progress -->
-
----
 
 # Thanks for your attention!
 

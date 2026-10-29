@@ -176,19 +176,6 @@ There is no canonical formal specification of Ethereum guest program behavior.
 * ((TODO: mention competing specs))
 * ((TODO: Fill in here or in Tau's parts on how they aren't complete or canonical references)).
 
-___
-
-
-# Gap: Verification of performant code
-
-For performance, teams generally use systems programming languages such as Rust, C++ or Zig. ((TODO: Redacted comment on another guest claiming good performance; is that public, or will it be by the time we present?)))
-
-* Outside of safe Rust, we can have basic runtime safety concerns.
-* There are concerns about the use of bump allocators the possibility of going out of memory in the ZKVMs, which have different memory models.
-* Formal guarantees require either:
-  * formally verified compiler, and a trusted source-to-fv framework extraction; or
-  * formal verification of the binary.
-
 ---
 
 # Gap: Performance of verifiable code
@@ -198,6 +185,54 @@ For performance, teams generally use systems programming languages such as Rust,
 * Writing directly in Lean requires you can run the interpreter (maybe viable for CPU proving) or compile to a guest (maybe trusting Lean-to-C is ok).
 
 
+___
+
+
+# Gap: Source code in systems languages 
+
+For performance, teams generally use systems programming languages such as Rust, C++ or Zig. ((TODO: Redacted comment on another guest claiming good performance; is that public, or will it be by the time we present?)))
+
+* Outside of safe Rust, we can have basic runtime safety concerns.
+* There are concerns about the use of bump allocators the possibility of going out of memory in the ZKVMs, which have different memory modelss.
+* Need a trusted source-to-fv framework extraction.
+
+---
+
+# Progress: Compiler bugs and runtime safety
+
+Compilers are complex and they contain many bugs. Moreover, We are targeting bare-metal RISC-V, which is a newer target often having less support and testing (e.g., it is lower-tier in Rust).
+
+* Ideal: formally verified compilers and only languages with runtime safety guarantees.
+* Realistic: the performance imperative will push us to accept unsafe rust and languages without runtime guarantees.
+* Formal verification of the binary is plausible but has not been shown to scale:
+  * Naive cost for runtime safety: 800 Lean lines per RISC-V instruction
+  * Theorem + Anthropic collaboration: safety in a few dozen lines of Rocq per RISC-V instruction 
+  * My own experiment the zesu: 2-3x what Theorem + Anthropic report
+* Not enough data on compliance proof sizes or token efficiency.
+* No data on the maintenance story.
+* Train AIs that are better and/or more token-efficient when writing proofs?
+
+---
+
+
+
+<!-- _class: lead -->
+<!-- _paginate: false -->
+
+# Part 2: Tau's talk
+
+<div class="bottom-bar"><img src="assets/logo-zkevm-light.svg" class="logo" alt=""></div>
+
+
+---
+
+
+<!-- _class: lead -->
+<!-- _paginate: false -->
+
+# Conclusion
+
+<div class="bottom-bar"><img src="assets/logo-zkevm-light.svg" class="logo" alt=""></div>
 
 ---
 
@@ -210,6 +245,7 @@ We should collab on this. My thoughts for now in a very non-succinct form.
 - FV is not the only way to harden software; testing and auditing are not going away.
 - FV should be maintained in CI and we need to establish this invariant and maintain it soon.
 - Having a trusted extractor is absolutely acceptable if it reduces the TCB complexity significantly.
+- We should be ambitious and we should collaborate.
 
 ---
 

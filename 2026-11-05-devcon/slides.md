@@ -72,6 +72,16 @@ We have highly-conditional proofs of the form: "if a ZKVMs circuits accept a mac
 
 ---
 
+
+# Progress: Security of STARKs
+
+How do we know the cryptography is secure, conditional on standard assumptions?
+
+* verified-ZKEVM/ArkLib ((DOTHIS: link here and for soundcalc)) and friends give a framework for making specs and producing security proofs. Much progress there!
+* Circuits are a blackbox here.
+
+---
+
 # Gap: Soundness of accelerator circuits
 
 No ZKVM has viable performance without dedicated circuits for certain heavy computations (modular arithmetic and Keccak, in paticular).
@@ -101,15 +111,108 @@ No team has a formally verified verifier
 
 ---
 
-# Gap: RISC-V circuit completeness
+# Gap: RISC-V Circuit Completeness
 
 Recall this means: every RISC-V step is provable by the ZKVM.
 
 * Ethereum is nothing without liveness, so completeness is critically important.
-* We have seen formal proof that a circuit is not complete, i.e. that the ZKVM could halt the network.
-* This is distinct from "
+* We have seen formal proof that a circuit is not complete, i.e. a Lean4 model of a completeness bug.
+* This is distinct from the completeness statements are proven as part of clean DSL, that the witness generator produces values that satisfy the constraints. If you don't perfectly model RISC-V semantics, then compilers will produce correct programs that are unprovable.
 
 ---
+
+# Gap: Prover Liveness in General
+
+Just like with verifiers, non-circuit bugs, even really silly ones, can crash the network.
+
+* We have no framework for proving safety of CUDA code.
+* Rust code around CUDA can panic. Proving panic freeness outside unsafe blocks might be provable using tools such as Aeneas.
+* Unsafe Rust abounds, and unsafe code is disproportionately buggy due to being loci of complexity. Much to do to formalize this.
+* C++ is also in use.
+
+---
+
+
+# Gap: STARK and Implementation
+
+How do we know the cryptography is strong, and how do we know that the implementation follows the spec?
+
+* For the signature aggregation in the CL, we can link safe Rust to ArkLib specs.
+* For ZKEVMs, we the implementations are in CUDA in large part, and we have no progress.
+* We also need arguments for the recursive aggregation -- no progress.
+
+---
+
+<!-- _class: lead -->
+<!-- _paginate: false -->
+
+# Guest Programs
+
+<div class="bottom-bar"><img src="assets/logo-zkevm-light.svg" class="logo" alt=""></div>
+
+---
+
+# Progress: evm-asm Experiments
+
+As Derek explained an hour ago, there is progress on using Lean to write a guest program and prove compliance statements about it.
+
+* Proving to full compliance out of reach.
+* Use of pancake and other foods modularizes the problem using verified compilation.
+
+
+---
+
+# Progress: Placeholder
+
+I have heard non-specific rumors of progress from other teams. Perhaps I will be able to fill this in based on some Devcon talks before Thursday.
+
+---
+
+# Gap: Specifications
+
+There is no canonical formal specification of Ethereum guest program behavior.
+
+* EL specs ((TODO: LINK)) are in Python which is not suitable for proving. 
+* ((TODO: mention competing specs))
+* ((TODO: Fill in here or in Tau's parts on how they aren't complete or canonical references)).
+
+___
+
+
+# Gap: Verification of performant code
+
+For performance, teams generally use systems programming languages such as Rust, C++ or Zig. ((TODO: Redacted comment on another guest claiming good performance; is that public, or will it be by the time we present?)))
+
+* Outside of safe Rust, we can have basic runtime safety concerns.
+* There are concerns about the use of bump allocators the possibility of going out of memory in the ZKVMs, which have different memory models.
+* Formal guarantees require either:
+  * formally verified compiler, and a trusted source-to-fv framework extraction; or
+  * formal verification of the binary.
+
+---
+
+# Gap: Performance of verifiable code
+
+* We have seen that the raw assembly LLMs write has bad performance by default.
+* Verify then optimize might be viable, but the cost profile is unknown.
+* Writing directly in Lean requires you can run the interpreter (maybe viable for CPU proving) or compile to a guest (maybe trusting Lean-to-C is ok).
+
+
+
+---
+
+# Guidance (scratch section)
+
+We should collab on this. My thoughts for now in a very non-succinct form.
+- We should aim for a very high degree of formal assurances before ZKEVMs secure mainnet. That will not happen for several years.
+- Verified compilers and frameworks for proving compliance of Rust and possibly other source are coming in the future, likely in time for us.
+- Replacing industry strength programming languages and their ecosystems in the name of verification sooner has huge costs that must be weighed.
+- FV is not the only way to harden software; testing and auditing are not going away.
+- FV should be maintained in CI and we need to establish this invariant and maintain it soon.
+- Having a trusted extractor is absolutely acceptable if it reduces the TCB complexity significantly.
+
+---
+
 
 # Thanks for your attention!
 

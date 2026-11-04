@@ -1,0 +1,24 @@
+%%{init: {"theme": "default", "themeCSS": "g.cluster[id$=\"-Prover\"] rect { y: 42px; height: 231px; } g.cluster[id$=\"-Prover\"] .cluster-label :first-child { y: 14px; } g.cluster[id$=\"-VM\"] rect { y: 76px; height: 177px; } g.cluster[id$=\"-VM\"] .cluster-label :first-child { y: 28px; }", "themeVariables": {"primaryColor": "#eef1f6", "primaryTextColor": "#334155", "lineColor": "#0c9fde", "secondaryColor": "#f5f7fa", "fontSize": "20px"}}}%%
+%% themeCSS nudges the nested "zkVM Prover" and "RISC-V VM" boxes down so the three titles don't overlap.
+%% The pixel values match the layout at fontSize 20px; re-check them if fonts or labels change.
+flowchart LR
+    classDef io fill:#eef1f6,stroke:#0c9fde,color:#334155,stroke-width:3px
+    classDef proc fill:#0c9fde,stroke:#0a7bb8,color:#ffffff,stroke-width:3px
+    classDef proof fill:#22c55e,stroke:#16a34a,color:#ffffff,stroke-width:3px
+
+    subgraph Physical["Prover Machine"]
+    direction LR
+        In["block, pre-state"]:::io --> Program["EVM implementation"]:::proc
+        subgraph Prover["zkVM Prover"]
+            subgraph VM["RISC-V VM"]
+                Program
+            end
+        end
+        Program --> Out["post-state"]:::io
+        Prover --> Proof:::proof
+    end
+
+    style Physical fill:none,stroke:#64748b,color:#334155,stroke-width:3px
+    style Prover fill:none,stroke:#0c9fde,color:#334155,stroke-width:3px
+    style VM fill:none,stroke:#64748b,color:#334155,stroke-width:3px
+    linkStyle default stroke-width:3px

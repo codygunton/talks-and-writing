@@ -1,7 +1,7 @@
 ---
 marp: true
 lang: en-US
-title: Towards Formally Verified zkEVMs
+title: Toward Formally Verified zkEVMs
 theme: zkevm-dark
 transition: fade
 paginate: true
@@ -16,13 +16,25 @@ _paginate: false
 
 # Towards Formally Verified zkEVMs
 
-Cody Gunton & TauLeptop - Devcon, November 5, 2026
+Cody Gunton - Devcon 8, November 5, 2026
 
 https://codygunton.github.io/talks-and-writing/2026-11-05-devcon/
 
 <img src="assets/qr.png" alt="QR code to slides" style="width:140px;border-radius:0;">
 
 <div class="bottom-bar"><img src="assets/logo-zkevm-light.svg" class="logo" alt=""></div>
+
+---
+
+# ZKEVM, with an E
+
+* There is a lot of talk of FV and ZK here. 
+  * My focus: proofs of block execution for L1 scaling
+  * There are many general takeaways
+* A word on EIP-8025
+  * Deprioritized by ACD, but there seems to be long-term support.
+  * Tony paraphrase: Ethereum only has capacity for about 10% of Mumbai.
+
 
 ---
 
@@ -52,14 +64,6 @@ If this is not you, have a look at my talk: ((DOTHIS: insert link))
 
 <div class="bottom-bar"><img src="assets/logo-zkevm-light.svg" class="logo" alt=""></div>
 
----
-
-# ZKVMs: The Dream Statement
-
-For any program compiled to RISC-V for execution in the ZKVM, and for any valid inputs to the program, a verifier will accept a proof of execution for that program if and only if the prover supplied the RISC-V spec-compliant execution trace of that program.
-
-* Completeness: the "if" part
-* Soundness: the "only if" part
 
 ---
 
@@ -69,6 +73,15 @@ The RISC-V community maintains a formal specification, its [Sail model](https://
 
 * Sail has backends to Lean, Rocq, C, SystemVerilog, and several other languages, so we can test the spec and also verify against it.
 * This means we can test compliance of RISC-V ZKVMs
+
+---
+
+# ZKVMs: The Dream Statement
+
+For any program compiled to RISC-V for execution in the ZKVM, and for any valid inputs to the program, a verifier will accept a proof of execution for that program if and only if the prover supplied the RISC-V spec-compliant execution trace of that program.
+
+* Completeness: the "if" part
+* Soundness: the "only if" part
 
 <!-- --- -->
 <!---->
@@ -109,12 +122,14 @@ No ZKVM has viable performance without dedicated circuits for certain heavy comp
 
 ---
 
-# Progress: Security of cryptogrpahic protocols
+# Progress: Security of cryptographic protocols
 
 How do we know the cryptography is secure, conditional on standard assumptions?
 
 * [Verified-zkEVM/ArkLib](https://github.com/Verified-zkEVM/ArkLib) and friends give a framework for making specs and producing security proofs. Much progress there!
 * This is the soundness of the composite crytographic protocol
+* Soundcalc ((TODO: link to reports)) 😬
+https://github.com/ethereum/soundcalc/tree/main/reports
 
 ---
 
@@ -163,6 +178,7 @@ Just like with verifiers, non-circuit bugs, even really silly ones, can crash th
 
 ---
 
+
 # Gap: STARK and Implementation
 
 How do we know the cryptography is strong, and how do we know that the implementation follows the spec?
@@ -182,9 +198,19 @@ How do we know the cryptography is strong, and how do we know that the implement
 
 ---
 
-# Guest programss: The Dream Statement
+# Specifications for guest programs
 
-IOU
+The canonical guest spec is Python: [`stateless_guest.py`](https://github.com/ethereum/execution-specs/blob/3ebcb5d02126918eb2aad599b3cf286200d4f458/src/ethereum/forks/amsterdam/stateless_guest.py) in execution-specs, the normative reference for [EIP-8025](https://eips.ethereum.org/EIPS/eip-8025).
+
+* Same state transition as a normal EL client, plus a thin stateless wrapper (~500 lines).
+* Inputs are the payload from the CL plus a witness: trie nodes, bytecode and recent headers, all checked by hash.
+* Not suitable for formal proving.
+
+---
+
+# Guest programs: The Dream Statement
+
+For every `StatelessInput`, the behavior of the guest program agrees with the behavior of the canonical spec in the ethereum/execution-specs.
 
 ---
 
@@ -195,12 +221,6 @@ As Derek explained an hour ago, there is progress on using Lean to write a guest
 * Proving to full compliance out of reach.
 * Use of pancake and other foods modularizes the problem using verified compilation.
 
-
----
-
-# Progress: Placeholder
-
-I have heard non-specific rumors of progress from other teams. Perhaps I will be able to fill this in based on some Devcon talks before Thursday.
 
 ---
 
@@ -235,33 +255,46 @@ For performance, teams generally use systems programming languages such as Rust,
 
 ---
 
-# Progress: Compiler bugs and runtime safety
+# Gap: Compiler Bugs and Runtime Safety
 
-Compilers are complex and they contain many bugs. Moreover, We are targeting bare-metal RISC-V, which is a newer target often having less support and testing (e.g., it is lower-tier in Rust).
+Another approach: formally verified compilers and only languages with runtime safety guarantees.
 
-* Ideal: formally verified compilers and only languages with runtime safety guarantees.
-* Realistic: the performance imperative will push us to accept unsafe rust and languages without runtime guarantees.
+* There is a certified C compiler, CompCert, but it's not FOSS.
+* There is a certified compiler for a language called pancake 
+  * Low level, potentially good performance, but there's no runtime safety guarantee.
+  * [stateless-pancaketh](https://github.com/flamingoponderado/stateless-pancaketh), is a guest, the successor to evm-asm
+  * There is no compliance proof; evm.fast is proving relative improvements from a fixed implementation.
+
+---
+
+# Gap: Compiler Bugs and Runtime Safety (cont'd)
+
+* Verified rustc?: Rust uses LLVM, big complicated compiler toolchain. 
+  * There is a long-term project [VeIR](https://github.com/opencompl/veir) to make a universal verified compiler toolkit.
+* Verified cranelift? 
+  * A much simpler compiler of a (large) subset of rust with ~15% performance penalty.  
+  * Some of us at the EF have unbridled slop project to get a baseline verified Rust compiler ASAP https://github.com/eth-act/clifv
+  * Lean implementation with 41% of test (in ARM) objects compiling to the same bytecode as stock cranelift.
+  * Three compiler bugs reported.
+  * No bare-metal RISC-V support... yet 😈
+
+---
+
+# Gap: Compiler bugs and runtime safety (cont'd)
+
+We can't expect everyone write everything in pancake or safe rust.
+
 * Formal verification of the binary is plausible but has not been shown to scale:
   * Naive cost for runtime safety: 800 Lean lines per RISC-V instruction
   * Theorem + Anthropic collaboration: safety in a few dozen lines of Rocq per RISC-V instruction
   * My own experiment the zesu: 2-3x what Theorem + Anthropic report
+* leanVM's aggregation guest has an advanced-stage binary verification under assessment. Seems that read only memory is a big simplification.
 * Not enough data on compliance proof sizes or token efficiency.
-* No data on the maintenance story.
-* Train AIs that are better and/or more token-efficient when writing proofs?
+* No data on the maintenance story in general.
 
 ---
 
 
-
-<!-- _class: lead -->
-<!-- _paginate: false -->
-
-# Part 2: Tau's talk
-
-<div class="bottom-bar"><img src="assets/logo-zkevm-light.svg" class="logo" alt=""></div>
-
-
----
 
 
 <!-- _class: lead -->

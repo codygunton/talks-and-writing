@@ -30,9 +30,9 @@ https://codygunton.github.io/talks-and-writing/2026-11-05-devcon/
 
 * We should strive to make perfectly secure ZKEVMs.
 * AI does not make this easy or guarantee it will happen.
-* The community has learned a lot,  but we still do not have a clear path to make ZKEVMs that are simultaneously:
+* The community has learned a lot, but we still do not have a clear path to make ZKEVMs that are simultaneously:
   * High performance (real time proving on a small number of GPUs);
-  * High assurance (high degree of coverage by formal verification); 
+  * High assurance (high degree of coverage by formal verification);
   * Maintainable (the formal proofs are robust invariant in CI).
 
 ---
@@ -56,10 +56,28 @@ If this is not you, have a look at my talk: ((DOTHIS: insert link))
 
 # ZKVMs: The Dream Statement
 
-For any program compiled for the ZKVM, and for any valid inputs to the program, a verifier will accept a proof of execution for that program if and only if the prover supplied the RISC-V spec-compliant execution trace of that program.
+For any program compiled to RISC-V for execution in the ZKVM, and for any valid inputs to the program, a verifier will accept a proof of execution for that program if and only if the prover supplied the RISC-V spec-compliant execution trace of that program.
 
 * Completeness: the "if" part
 * Soundness: the "only if" part
+
+---
+
+# Specifications for executables in ZKVMs
+
+The RISC-V community maintains a formal specification, its [Sail model](https://github.com/riscv/sail-riscv).
+
+* Sail has backends to Lean, Rocq, C, SystemVerilog, and several other languages, so we can test the spec and also verify against it.
+* This means we can test compliance of RISC-V ZKVMs
+
+<!-- --- -->
+<!---->
+<!-- # Specifications for ZKVM executables -->
+<!---->
+<!-- Other ISAs have open formal specifications too, but they reach Sail by translation rather than being written in it. -->
+<!---->
+<!-- - Arm: Arm publishes its spec in its own language, [ASL](https://developer.arm.com/downloads/-/exploration-tools). [sail-arm](https://github.com/rems-project/sail-arm) is generated from it and builds to Lean and Rocq. -->
+<!-- - x86: no vendor spec. [sail-x86-from-acl2](https://github.com/rems-project/sail-x86-from-acl2) is generated from the academic [ACL2 x86isa model](https://github.com/acl2/acl2/tree/master/books/projects/x86isa). -->
 
 ---
 
@@ -72,36 +90,49 @@ We have highly-conditional proofs of the form: "if a ZKVMs circuits accept a mac
 
 ---
 
+# Gap: Standards compliance
 
-# Progress: Security of STARKs
+zkVMs must also follow the [zkevm-standards](https://github.com/eth-act/zkevm-standards/) that go beyond the ISA: accelerator interface, accelerated memory operations, I/O, Termination Semantics.
 
-How do we know the cryptography is secure, conditional on standard assumptions?
-
-* verified-ZKEVM/ArkLib ((DOTHIS: link here and for soundcalc)) and friends give a framework for making specs and producing security proofs. Much progress there!
-* Circuits are a blackbox here.
+* Today compliance with these is only tested ([riscv-arch-test](https://github.com/riscv-non-isa/riscv-arch-test), [zkevm-test-monitor](https://github.com/eth-act/zkevm-test-monitor/)), not formally verified.
+* Tests catch a lot, but they are not proofs. Closing this gap is future work.
 
 ---
 
 # Gap: Soundness of accelerator circuits
 
 No ZKVM has viable performance without dedicated circuits for certain heavy computations (modular arithmetic and Keccak, in paticular).
+
 * openvm-fv has coverage of some hashing precompiles
 * Otherwise this is a large gap
+* A zkVM is only as secure as its weakest component.
+
+---
+
+# Progress: Security of cryptogrpahic protocols
+
+How do we know the cryptography is secure, conditional on standard assumptions?
+
+* [Verified-zkEVM/ArkLib](https://github.com/Verified-zkEVM/ArkLib) and friends give a framework for making specs and producing security proofs. Much progress there!
+* This is the soundness of the composite crytographic protocol
 
 ---
 
 # Gap: Recursion
 
 All ZKVMs use recursive verification to collect proofs generated in parallel and compress them to a final smallish proof.
+
 * The intermediate steps typically use different circuits and possibly even different proving STARKs (exception: Airbender).
 * The "spec" is no longer the RISC-V spec, but rather a spec for an intermediate STARK verifier. No canonical spec, hence less assurance. (ArkLib can help).
+* Theory caveat: recursion runs Fiat-Shamir inside a circuit, and our security arguments are limited by our ability to reason about Fiat-Shamir in circuits.
 
 ---
 
 # Gap: The Verifier
 
-No team has a formally verified verifier
-* The verifier is more than just the circuits. 
+No team has a formally verified verifier implementation
+
+* The verifier is more than just the circuits.
   * How do we know it uses the whole proof?
   * How do we know it doesn't just skip some AIR expression?
   * How do we know that there is not a Fiat-Shamir bug?
@@ -132,13 +163,12 @@ Just like with verifiers, non-circuit bugs, even really silly ones, can crash th
 
 ---
 
-
 # Gap: STARK and Implementation
 
 How do we know the cryptography is strong, and how do we know that the implementation follows the spec?
 
-* For the signature aggregation in the CL, we can link safe Rust to ArkLib specs.
-* For ZKEVMs, we the implementations are in CUDA in large part, and we have no progress.
+* For the signature aggregation in the CL, we can link safe Rust to ArkLib specs (e.g., using [Aeneas](https://github.com/AeneasVerif/aeneas)).
+* For ZKEVMs, the implementations are to a large degree implemented in CUDA, and the community has made no progress on verifying them.
 * We also need arguments for the recursive aggregation -- no progress.
 
 ---
@@ -149,6 +179,12 @@ How do we know the cryptography is strong, and how do we know that the implement
 # Guest Programs
 
 <div class="bottom-bar"><img src="assets/logo-zkevm-light.svg" class="logo" alt=""></div>
+
+---
+
+# Guest programss: The Dream Statement
+
+IOU
 
 ---
 
@@ -172,7 +208,8 @@ I have heard non-specific rumors of progress from other teams. Perhaps I will be
 
 There is no canonical formal specification of Ethereum guest program behavior.
 
-* EL specs ((TODO: LINK)) are in Python which is not suitable for proving. 
+* EL specs ((TODO: LINK)) are in Python which is not suitable for proving.
+* [evm-sail](https://github.com/frisitano/evm-sail): an experimental EVM spec in Sail, the same language as the RISC-V spec from earlier, so it gets the same Lean backend.
 * ((TODO: mention competing specs))
 * ((TODO: Fill in here or in Tau's parts on how they aren't complete or canonical references)).
 
@@ -185,10 +222,10 @@ There is no canonical formal specification of Ethereum guest program behavior.
 * Writing directly in Lean requires you can run the interpreter (maybe viable for CPU proving) or compile to a guest (maybe trusting Lean-to-C is ok).
 
 
-___
+---
 
 
-# Gap: Source code in systems languages 
+# Gap: Source code in systems languages
 
 For performance, teams generally use systems programming languages such as Rust, C++ or Zig. ((TODO: Redacted comment on another guest claiming good performance; is that public, or will it be by the time we present?)))
 
@@ -206,7 +243,7 @@ Compilers are complex and they contain many bugs. Moreover, We are targeting bar
 * Realistic: the performance imperative will push us to accept unsafe rust and languages without runtime guarantees.
 * Formal verification of the binary is plausible but has not been shown to scale:
   * Naive cost for runtime safety: 800 Lean lines per RISC-V instruction
-  * Theorem + Anthropic collaboration: safety in a few dozen lines of Rocq per RISC-V instruction 
+  * Theorem + Anthropic collaboration: safety in a few dozen lines of Rocq per RISC-V instruction
   * My own experiment the zesu: 2-3x what Theorem + Anthropic report
 * Not enough data on compliance proof sizes or token efficiency.
 * No data on the maintenance story.
@@ -249,6 +286,15 @@ We should collab on this. My thoughts for now in a very non-succinct form.
 
 ---
 
+# Come build with us: PRs welcome
+
+((DOTHIS: confirm list, add anything Tau wants here))
+
+* [zisk-fv](https://github.com/eth-act/zisk-fv): formal verification of ZisK's RISC-V circuits
+* clifv
+* [zkevm-standards](https://github.com/eth-act/zkevm-standards/): standards for zkVMs used by Ethereum
+
+---
 
 # Thanks for your attention!
 

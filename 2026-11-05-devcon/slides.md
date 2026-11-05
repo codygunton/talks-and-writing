@@ -31,7 +31,7 @@ style: |
 <script src="assets/sparkles-light.js"></script>
 <script type="module" src="assets/mermaid-zkevm-light.js"></script>
 
-# Towards Formally Verified zkEVMs
+# Toward Formally Verified ZKEVMs
 
 Cody Gunton - Devcon 8, November 5, 2026
 

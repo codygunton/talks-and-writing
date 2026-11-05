@@ -91,6 +91,9 @@ export default {
   allowLocalFiles: true,
   html: true,
   themeSet: 'themes',
+  // The bespoke template's on-screen controller (the arrow/fullscreen bar that
+  // appears on every mouse move) has no keyboard toggle, so turn it off here.
+  bespoke: { osc: false },
   // marp-core turns on markdown-it `breaks`, so every newline inside a
   // paragraph becomes a `<br>`. That makes a reflowed source paragraph render
   // as a ragged stack of lines. Turn it off: a paragraph rewraps freely, and a

@@ -68,7 +68,7 @@ Handoff meeting with ZisK team regarding integration into a broader fv program.
 STIR support landed in [#90](https://github.com/ethereum/soundcalc/pull/90).
 
 
-There is also progress on a Lean version of Soundcalc.
+There is also progress on a Lean version of Soundcalc, [symbolicsoft/soundcalc-lean](github.com/symbolicsoft/soundcalc-lean).
 
 ---
 

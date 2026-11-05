@@ -33,10 +33,8 @@ style: |
 
 # Toward Formally Verified ZKEVMs
 
-Cody Gunton - Devcon 8, November 5, 2026
-
 <div style="display:flex;align-items:center;justify-content:center;gap:1.2em;">
-  <div style="max-width:560px;text-align:left;"><a href="https://codygunton.github.io/talks-and-writing/2026-11-05-devcon/"><span style="white-space:nowrap;">https://codygunton.github.io/</span><wbr><span style="white-space:nowrap;">talks-and-writing/2026-11-05-devcon/</span></a></div>
+  <div style="max-width:560px;text-align:left;">Cody Gunton<br>Devcon 8, November 5, 2026<br><br><a href="https://codygunton.github.io/talks-and-writing/2026-11-05-devcon/"><span style="white-space:nowrap;">https://codygunton.github.io/</span><wbr><span style="white-space:nowrap;">talks-and-writing/2026-11-05-devcon/</span></a></div>
   <img src="assets/qr.png" alt="QR code to slides" style="width:220px;border-radius:0;flex-shrink:0;">
 </div>
 
@@ -120,8 +118,8 @@ The RISC-V community maintains a formal specification, its [Sail model](https://
 
 We have highly-conditional proofs of the form: "if a ZKVM's circuits accept a machine step, then the machine step was valid according to the RISC-V spec".
 
-* Examples: [sp1-lean](https://github.com/succinctlabs/sp1-lean), [openvm-fv](https://github.com/openvm-org/openvm-fv), [pico-fv](https://github.com/NethermindEth/pico-fv), [zisk-fv](https://github.com/eth-act/zisk-fv).
-* Many serious bugs have been caught in the process of making these.
+- Examples: [sp1-lean](https://github.com/succinctlabs/sp1-lean), [openvm-fv](https://github.com/openvm-org/openvm-fv), [pico-fv](https://github.com/NethermindEth/pico-fv), [zisk-fv](https://github.com/eth-act/zisk-fv).
+- Many serious bugs have been caught in the process of making these.
 
 ---
 
@@ -158,6 +156,12 @@ Recall this means: every RISC-V step is provable by the ZKVM.
 
 ---
 
+<!-- _paginate: false -->
+
+![bg](images/meme-formally-verified-core.jpg "Formally verified core on a duct-taped cart of CUDA, unsafe Rust and host code")
+
+---
+
 # Progress: Security of Cryptographic Protocols
 
 How do we know the cryptography is secure, conditional on standard assumptions?
@@ -165,6 +169,12 @@ How do we know the cryptography is secure, conditional on standard assumptions?
 * [Verified-zkEVM/ArkLib](https://github.com/Verified-zkEVM/ArkLib) and friends give a framework for making specs and producing security proofs. Much progress there!
 * This is the soundness of the composite cryptographic protocol.
 * [Soundcalc reports](https://github.com/ethereum/soundcalc/tree/main/reports) 😬
+
+---
+
+<!-- _paginate: false -->
+
+![bg](images/meme-secure-conditional-on.jpg "Secure, conditional on... a zip tie")
 
 ---
 
@@ -189,6 +199,12 @@ No team has a formally verified verifier implementation.
 * We don't want to FV the mathy stuff and get owned by something 'easy'.
 * A spec is, again, a cryptographic protocol spec.
 
+
+---
+
+<!-- _paginate: false -->
+
+![bg](images/meme-circuit-vs-verifier.jpg "A bank vault labelled The Circuit next to a flimsy door labelled The Verifier")
 
 ---
 
@@ -258,6 +274,12 @@ Another approach: formally verified compilers and only languages with runtime sa
   * Low level, potentially good performance, but there's no runtime safety.
   * [stateless-pancaketh](https://github.com/flamingoponderado/stateless-pancaketh) is a guest, the successor to [evm-asm](https://github.com/Verified-zkEVM/evm-asm).
   * There is no compliance proof; [evm.fast](https://www.yukon.org/evm.fast) proves improvements relative to a fixed implementation.
+
+---
+
+<!-- _paginate: false -->
+
+![bg](images/meme-its-safe.jpg "House on pallets: it's safe")
 
 ---
 

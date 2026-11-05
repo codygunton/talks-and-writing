@@ -6,6 +6,23 @@ theme: zkevm-dark
 transition: fade
 paginate: true
 _paginate: false
+style: |
+  /* QR code to the slides, upper right of every non-title slide */
+  section:not(.lead) {
+    background-image: url(assets/qr.png);
+    background-repeat: no-repeat;
+    background-position: top 24px right 24px;
+    background-size: 96px;
+  }
+  /* A second "# section" on a slide is a single "*" item, so it reveals in one step */
+  section ul:has(> li > h1) {
+    list-style: none;
+    margin-left: 0;
+    padding-left: 0;
+  }
+  section ul:has(> li > h1) ul {
+    list-style: disc;
+  }
 ---
 
 <!-- _class: lead -->
@@ -18,9 +35,10 @@ _paginate: false
 
 Cody Gunton - Devcon 8, November 5, 2026
 
-https://codygunton.github.io/talks-and-writing/2026-11-05-devcon/
-
-<img src="assets/qr.png" alt="QR code to slides" style="width:140px;border-radius:0;">
+<div style="display:flex;align-items:center;justify-content:center;gap:1.2em;">
+  <div style="max-width:560px;text-align:left;"><a href="https://codygunton.github.io/talks-and-writing/2026-11-05-devcon/"><span style="white-space:nowrap;">https://codygunton.github.io/</span><wbr><span style="white-space:nowrap;">talks-and-writing/2026-11-05-devcon/</span></a></div>
+  <img src="assets/qr.png" alt="QR code to slides" style="width:220px;border-radius:0;flex-shrink:0;">
+</div>
 
 <div class="bottom-bar"><img src="assets/logo-zkevm-light.svg" class="logo" alt=""></div>
 
@@ -28,7 +46,7 @@ https://codygunton.github.io/talks-and-writing/2026-11-05-devcon/
 
 # ZKEVM, with an E
 
-* ZKEVM Team Focus proofs of block execution for L1 scaling
+* ZKEVM team focus: proofs of block execution for L1 scaling
   * We don't build a ZKEVM (leanVM is not a ZKEVM)
   * We standardize, test and otherwise steward a collaboration with external teams
 * [EIP-8025](https://eips.ethereum.org/EIPS/eip-8025) rejected by ACD, but there seems to be wide support for the long-term vision for scaling with ZKEVMs.
@@ -39,10 +57,10 @@ https://codygunton.github.io/talks-and-writing/2026-11-05-devcon/
 
 # Takeaways first
 
-* We will ZKEVMs with significant formal guarantees attached.
+* We will have ZKEVMs with significant formal guarantees attached.
 * AI does not make this easy or guarantee it will happen.
 * The community has learned a lot, but we still do not have a clear path to make ZKEVMs that are simultaneously:
-  * High performance (real time proving on a small number of GPUs);
+  * High performance (real-time proving on a small number of GPUs);
   * High assurance (high degree of coverage by formal verification);
   * Maintainable (the formal proofs are robust invariant in CI).
 
@@ -64,6 +82,11 @@ I will assume you are familiar with ZKEVM terminology and basics of how these wi
 
 # ZKVMs (RISC-V ones)
 
+<div style="display:flex;align-items:center;justify-content:center;gap:1.2em;">
+  <div style="max-width:560px;text-align:left;"><a href="https://codygunton.github.io/talks-and-writing/2026-11-05-devcon/"><span style="white-space:nowrap;">https://codygunton.github.io/</span><wbr><span style="white-space:nowrap;">talks-and-writing/2026-11-05-devcon/</span></a></div>
+  <img src="assets/qr.png" alt="QR code to slides" style="width:220px;border-radius:0;flex-shrink:0;">
+</div>
+
 <div class="bottom-bar"><img src="assets/logo-zkevm-light.svg" class="logo" alt=""></div>
 
 
@@ -73,14 +96,14 @@ I will assume you are familiar with ZKEVM terminology and basics of how these wi
 
 The RISC-V community maintains a formal specification, its [Sail model](https://github.com/riscv/sail-riscv).
 
-* [Sail](https://github.com/rems-project/sail) has backends to Lean, Rocq, C, SystemVerilog, and several other languages, so we can test the spec and also verify against it.
+- [Sail](https://github.com/rems-project/sail) has backends to Lean, Rocq, C, SystemVerilog, and several other languages, so we can test the spec and also verify against it.
 
-# The Dream Statement
+* # The Dream Statement
 
-For any program compiled to RISC-V for execution in the ZKVM, and for any valid inputs to the program, a verifier will accept a proof of execution for that program if and only if the prover supplied the [RISC-V spec](https://github.com/riscv/sail-riscv)-compliant execution trace of that program.
+  For any program compiled to RISC-V for execution in the ZKVM, and for any valid inputs to the program, a verifier will accept a proof of execution for that program if and only if the prover supplied the [RISC-V spec](https://github.com/riscv/sail-riscv)-compliant execution trace of that program.
 
-* Completeness: the "if" part
-* Soundness: the "only if" part
+  - Completeness: the "if" part
+  - Soundness: the "only if" part
 
 <!-- --- -->
 <!---->
@@ -106,17 +129,15 @@ We have highly-conditional proofs of the form: "if a ZKVM's circuits accept a ma
 
 No ZKVM has viable performance without dedicated circuits for certain heavy computations (modular arithmetic and Keccak, in particular).
 
-* [openvm-fv](https://github.com/openvm-org/openvm-fv) has coverage of some hashing precompiles.
-* Otherwise this is a large gap.
+- [openvm-fv](https://github.com/openvm-org/openvm-fv) has coverage of some hashing precompiles.
+- Otherwise this is a large gap.
 
----
+* # Gap: Standards compliance
 
-# Gap: Standards compliance
+  zkVMs must also follow the [zkevm-standards](https://github.com/eth-act/zkevm-standards/) that go beyond the ISA: accelerator interface, accelerated memory operations, I/O and termination semantics.
 
-zkVMs must also follow the [zkevm-standards](https://github.com/eth-act/zkevm-standards/) that go beyond the ISA: accelerator interface, accelerated memory operations, I/O and termination semantics.
-
-* Today compliance with these is only tested ([riscv-arch-test](https://github.com/riscv-non-isa/riscv-arch-test), [zkevm-test-monitor](https://github.com/eth-act/zkevm-test-monitor/)), not formally verified.
-* Tests catch a lot, but they are not proofs. Closing this gap is future work.
+  - Today compliance with these is only tested ([zkevm-test-monitor](https://github.com/eth-act/zkevm-test-monitor/)).
+  - Tests catch a lot, but they are not proofs. Closing this gap is future work.
 
 ---
 
@@ -124,15 +145,16 @@ zkVMs must also follow the [zkevm-standards](https://github.com/eth-act/zkevm-st
 
 Recall this means: every RISC-V step is provable by the ZKVM.
 
-* Without this, you can have an unprovable transaction that DoS the network.
-* This is distinct from the completeness statements proven in the [clean](https://github.com/Verified-zkEVM/clean) DSL, that the witness generator produces values that satisfy the constraints.
+- Without this, you can have an unprovable transaction that can DoS the network.
+- This is distinct from the completeness statements proven in the [clean](https://github.com/Verified-zkEVM/clean) DSL, that the witness generator produces values that satisfy the constraints.
 
-# Gap: Prover Liveness in General
+* # Gap: Prover Liveness in General
 
-Just like with verifiers, non-circuit bugs, even really silly ones, can crash the network.
+  Just like with verifiers, non-circuit bugs, even really silly ones, can crash the network.
 
-* We have no framework for proving safety of CUDA code.
-* Unsafe Rust abounds, and unsafe code is disproportionately buggy because it is where the complexity concentrates. Much to do to formalize this.
+  - We have no framework for proving safety of CUDA code.
+  - Unsafe Rust abounds, and unsafe code is disproportionately buggy because it is where the complexity concentrates. Much to do to formalize this.
+
 
 ---
 
@@ -164,7 +186,7 @@ No team has a formally verified verifier implementation.
   * How do we know it uses the whole proof?
   * How do we know it doesn't just skip some AIR expression?
   * How do we know that there is not a Fiat-Shamir bug?
-* We don't want to fv the mathy stuff and get owned by something 'easy'.
+* We don't want to FV the mathy stuff and get owned by something 'easy'.
 * A spec is, again, a cryptographic protocol spec.
 
 
@@ -185,6 +207,11 @@ How do we know the cryptography is strong, and how do we know that the implement
 
 # Guest Programs
 
+<div style="display:flex;align-items:center;justify-content:center;gap:1.2em;">
+  <div style="max-width:560px;text-align:left;"><a href="https://codygunton.github.io/talks-and-writing/2026-11-05-devcon/"><span style="white-space:nowrap;">https://codygunton.github.io/</span><wbr><span style="white-space:nowrap;">talks-and-writing/2026-11-05-devcon/</span></a></div>
+  <img src="assets/qr.png" alt="QR code to slides" style="width:220px;border-radius:0;flex-shrink:0;">
+</div>
+
 <div class="bottom-bar"><img src="assets/logo-zkevm-light.svg" class="logo" alt=""></div>
 
 ---
@@ -193,45 +220,32 @@ How do we know the cryptography is strong, and how do we know that the implement
 
 The canonical guest spec is Python: [stateless_guest.py](https://github.com/ethereum/execution-specs/blob/3ebcb5d02126918eb2aad599b3cf286200d4f458/src/ethereum/forks/amsterdam/stateless_guest.py).
 
-* Not suitable for formal proving.
-
-# The Dream Statement
-
-For every [`StatelessInput`](https://github.com/ethereum/execution-specs/blob/3ebcb5d02126918eb2aad599b3cf286200d4f458/src/ethereum/forks/amsterdam/stateless.py), the behavior of the guest program agrees with the behavior of the canonical spec in [ethereum/execution-specs](https://github.com/ethereum/execution-specs).
-
----
-
-# Gap: Specifications
-
-There is no canonical formal specification of Ethereum guest program behavior.
-
+* The python spec is not suitable for formal proving.
 * The canonical [EL specs](https://github.com/ethereum/execution-specs) are in Python, which is not suitable for proving.
 * Formal EVM specs: [KEVM](https://github.com/runtimeverification/evm-semantics) (K), [Verifereum](https://github.com/verifereum/verifereum) (HOL4), [EVMYulLean](https://github.com/NethermindEth/EVMYulLean) (Lean), [evm-dafny](https://github.com/Consensys-Incorporated/evm-dafny) (Dafny).
-C overage varies (evm-dafny targets Berlin, Verifereum targets Osaka), and none specifies the stateless guest (witness, SSZ input).
+Coverage varies (evm-dafny targets Berlin, Verifereum targets Osaka), and none specifies the stateless guest (witness, SSZ input).
 
 * [evm-sail](https://github.com/frisitano/evm-sail): an experimental EVM spec in Sail, the same language as the RISC-V spec from earlier, which also covers stateless validation.
 
-* Alex Hick's WIP [leanerSTFSpec](https://github.com/alexanderlhicks/leanerSTFSpec), pure Lean, aiming to be executable.
+* Alex Hicks's WIP [leanerSTFSpec](https://github.com/alexanderlhicks/leanerSTFSpec), pure Lean, aiming to be executable.
 
 ---
+
+<style scoped>section { font-size: 24px; }</style>
 
 # Gap: Performance of verifiable code
 
-* We have seen that the raw assembly LLMs write has bad performance by default.
-* Verify then optimize might be viable, but the cost profile is unknown.
-* Writing directly in Lean requires that you either run the interpreter (maybe viable for CPU proving) or compile to a guest (maybe trusting Lean-to-C is OK).
+- We have seen that the raw assembly LLMs write has bad performance by default.
+- Verify then optimize might be viable, but the cost profile is unknown.
+- Writing directly in Lean requires that you either run the interpreter (maybe viable for CPU proving) or compile to a guest (maybe trusting Lean-to-C is OK).
 
+* # Gap: Source code in low-level languages
 
----
+  For performance, teams generally use systems programming languages such as Rust, C++ or Zig. Nethermind uses C# with runtime modifications.
 
-
-# Gap: Source code in systems languages
-
-For performance, teams generally use systems programming languages such as Rust, C++ or Zig. Nethermind uses C# with runtime modifications.
-
-* Outside of safe Rust, we can have basic runtime safety concerns.
-* There are concerns about bump allocators and the possibility of running out of memory in the ZKVMs, which have different memory models.
-* We need trusted extraction from source code into an FV framework.
+  - Outside of safe Rust, we can have basic runtime safety concerns.
+  - There are concerns about bump allocators and the possibility of running out of memory in the ZKVMs, which have different memory models.
+  - We need trusted extraction from source code into an FV framework.
 
 ---
 
@@ -261,7 +275,7 @@ Another approach: formally verified compilers and only languages with runtime sa
 ---
 
 
-# Gap: Compiler bugs and runtime safety (cont'd)
+# Gap: Compiler Bugs and Runtime Safety (cont'd)
 
 We can't expect everyone to write everything in [Pancake](https://github.com/CakeML/cakeml/tree/master/pancake) or safe Rust.
 
@@ -271,7 +285,7 @@ We can't expect everyone to write everything in [Pancake](https://github.com/Cak
   * My own [experiment](https://github.com/codygunton/binary-fv-experiment) on [zesu](https://github.com/Consensys-Incorporated/zesu): 2-3x what Theorem + Anthropic report
 * [leanVM](https://github.com/leanEthereum/leanVM)'s aggregation guest has an advanced-stage binary verification under assessment. It seems read-only memory is a big simplification.
 * Not enough data on compliance proof sizes or token efficiency.
-* No data on the maintenance story in general.
+* **No data on the maintenance story in general.**
 
 ---
 
@@ -280,7 +294,7 @@ We can't expect everyone to write everything in [Pancake](https://github.com/Cak
 As Derek explained an hour ago, there is progress on using Lean to write a guest program ([evm-asm](https://github.com/Verified-zkEVM/evm-asm)) directly in assembly and prove compliance statements about it.
 
 * Proving full compliance is out of reach.
-* Successor project using [pancake](https://github.com/CakeML/cakeml/tree/master/pancake) seeks to simplify the compliance proofs by removing the execution of assembly.
+* Successor project using [Pancake](https://github.com/CakeML/cakeml/tree/master/pancake) seeks to simplify the compliance proofs by removing the execution of assembly.
 
 ---
 
@@ -291,16 +305,42 @@ As Derek explained an hour ago, there is progress on using Lean to write a guest
 
 # Conclusion
 
+<div style="display:flex;align-items:center;justify-content:center;gap:1.2em;">
+  <div style="max-width:560px;text-align:left;"><a href="https://codygunton.github.io/talks-and-writing/2026-11-05-devcon/"><span style="white-space:nowrap;">https://codygunton.github.io/</span><wbr><span style="white-space:nowrap;">talks-and-writing/2026-11-05-devcon/</span></a></div>
+  <img src="assets/qr.png" alt="QR code to slides" style="width:220px;border-radius:0;flex-shrink:0;">
+</div>
+
 <div class="bottom-bar"><img src="assets/logo-zkevm-light.svg" class="logo" alt=""></div>
 
 ---
+<style scoped>section { font-size: 24px; }</style>
 
-# Come build with us: PRs welcome
+# In summary
 
-((DOTHIS: confirm list, add anything Tau wants here))
+* Under Control
+  - RISC-V and accelerator compliance
+  - Cryptographic protocol correctness
+
+* Seems Pretty Doable
+  - Recursive circuit compliance
+  - Final verifier compliance
+
+* Needs a Convincing Story
+  - Guest compliance
+  - Standards compliance
+  - Prover runtime safety
+  - CI / maintainability of everything
+
+---
+
+
+# Build with me 🙏
 
 * [zisk-fv](https://github.com/eth-act/zisk-fv): formal verification of ZisK's RISC-V circuits
 * [clifv](https://github.com/eth-act/clifv): experiment toward a verified Cranelift, in Lean
+* [zkevm-standards](https://github.com/eth-act/zkevm-standards/): the standards zkVMs must follow beyond the ISA
+* [zkevm-test-monitor](https://github.com/eth-act/zkevm-test-monitor/): compliance testing across zkVMs
+* [L1-zkEVM breakout calls](https://github.com/ethereum/pm/issues/2269): monthly public call, next one in December
 
 ---
 
@@ -308,5 +348,10 @@ As Derek explained an hour ago, there is progress on using Lean to write a guest
 
 <!-- _class: lead -->
 <!-- _paginate: false -->
+
+<div style="display:flex;align-items:center;justify-content:center;gap:1.2em;">
+  <div style="max-width:560px;text-align:left;"><a href="https://codygunton.github.io/talks-and-writing/2026-11-05-devcon/"><span style="white-space:nowrap;">https://codygunton.github.io/</span><wbr><span style="white-space:nowrap;">talks-and-writing/2026-11-05-devcon/</span></a></div>
+  <img src="assets/qr.png" alt="QR code to slides" style="width:220px;border-radius:0;flex-shrink:0;">
+</div>
 
 <div class="bottom-bar"><img src="assets/logo-zkevm-light.svg" class="logo" alt=""></div>

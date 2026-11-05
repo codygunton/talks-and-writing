@@ -55,7 +55,7 @@ style: |
 # Takeaways first
 
 * We will have ZKEVMs with significant formal guarantees attached.
-* AI does not make this easy or guarantee it will happen.
+* AI does not make this easy or guarantee that end-to-end fv is practical.
 * The community has learned a lot, but we still do not have a clear path to make ZKEVMs that are simultaneously:
   * High performance (real-time proving on a small number of GPUs);
   * High assurance (high degree of coverage by formal verification);

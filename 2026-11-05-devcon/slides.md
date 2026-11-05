@@ -2,7 +2,7 @@
 marp: true
 lang: en-US
 title: Toward Formally Verified zkEVMs
-theme: zkevm-dark
+theme: zkevm-light
 transition: fade
 paginate: true
 _paginate: false

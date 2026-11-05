@@ -8,7 +8,7 @@ flowchart LR
 
     subgraph Physical["Prover Machine"]
     direction LR
-        In["block, pre-state"]:::io --> Program["EVM implementation"]:::proc
+        In["block, pre-state"]:::io --> Program["EVM implementation = guest program"]:::proc
         subgraph Prover["zkVM Prover"]
             subgraph VM["RISC-V VM"]
                 Program

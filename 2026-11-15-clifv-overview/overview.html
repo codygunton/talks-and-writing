@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>clifv: a verified Cranelift backend in Lean</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600&family=JetBrains+Mono&display=swap" rel="stylesheet">
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({ startOnLoad: true, theme: 'base',
+      themeVariables: { primaryColor: '#eef1f6', primaryBorderColor: '#0c9fde', primaryTextColor: '#062873',
+                        lineColor: '#64748b', fontFamily: 'Inter, sans-serif', fontSize: '14px' } });
+  </script>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">clifv: a verified Cranelift backend in Lean</h1>
+<p class="subtitle">Where the project stands: what Cranelift is, what is
+proved, and how the Lean library works</p>
+<p class="date">Draft of 15 November 2026 · clifv main
+<code>d1c9c47e6</code></p>
+</header>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#in-one-paragraph" id="toc-in-one-paragraph">In one
+paragraph</a></li>
+<li><a href="#how-rust-becomes-machine-code"
+id="toc-how-rust-becomes-machine-code">1. How Rust becomes machine
+code</a></li>
+<li><a href="#clif-and-how-cranelift-compiles-it"
+id="toc-clif-and-how-cranelift-compiles-it">2. CLIF and how Cranelift
+compiles it</a></li>
+<li><a href="#why-cranelift-is-so-much-smaller-than-llvm"
+id="toc-why-cranelift-is-so-much-smaller-than-llvm">3. Why Cranelift is
+so much smaller than LLVM</a></li>
+<li><a href="#what-it-means-to-verify-a-cranelift-backend"
+id="toc-what-it-means-to-verify-a-cranelift-backend">4. What it means to
+verify a Cranelift backend</a></li>
+<li><a href="#the-compilers-components-and-how-each-is-assured"
+id="toc-the-compilers-components-and-how-each-is-assured">5. The
+compiler’s components and how each is assured</a></li>
+<li><a href="#the-theorems" id="toc-the-theorems">6. The
+theorems</a></li>
+<li><a href="#status" id="toc-status">7. Status</a></li>
+<li><a href="#the-lean-library" id="toc-the-lean-library">8. The Lean
+library</a></li>
+<li><a href="#where-collaboration-could-help"
+id="toc-where-collaboration-could-help">9. Where collaboration could
+help</a></li>
+</ul>
+</nav>
+<h2 id="in-one-paragraph">In one paragraph</h2>
+<p>clifv is a compiler, written in Lean 4, that turns Cranelift’s
+intermediate representation (CLIF) into AArch64 machine code. It comes
+with machine-checked proofs that the generated code behaves as the
+source program does. It is built to reproduce what stock Cranelift
+emits, byte for byte. On Cranelift’s own test suite, <strong>1,996 of
+4,455</strong> function outputs are already byte-identical to stock
+Cranelift. <strong>1,713</strong> of those come out of the proved
+compiler with no unproved step. Most of the remaining gap is SIMD, which
+clifv does not support yet. The proofs rest on two specifications
+written in Lean: a semantics for CLIF and a model of the Arm processor.
+Both are tested against independent references rather than proved. The
+proof library is large, about 1.1 million lines of Lean, which is
+roughly six times the size of the Cranelift code it mirrors. Building it
+is the main engineering bottleneck.</p>
+<h2 id="how-rust-becomes-machine-code">1. How Rust becomes machine
+code</h2>
+<p>A compiler is usually described in two halves. The
+<strong>frontend</strong> understands the language: it parses, resolves
+names, checks types and, for Rust, checks borrowing. The <strong>code
+generator</strong> (or <em>backend</em>) takes a low-level,
+language-independent description of the program and turns it into
+instructions for a particular processor. That work consists of choosing
+instructions, assigning values to registers, laying out stack frames,
+and encoding the result as bytes.</p>
+<p>The Rust compiler, <code>rustc</code>, does its language-specific
+work on its own mid-level IR (MIR). It then hands MIR to a pluggable
+code generator. The default one is <strong>LLVM</strong>: plain LLVM
+through <code>rustc_codegen_llvm</code>, using Rust’s own fork of LLVM
+(LLVM 22 in current nightlies). MLIR plays no part. Two alternative
+backends exist: <code>rustc_codegen_gcc</code>, and
+<code>rustc_codegen_cranelift</code> (“cg_clif”), which translates MIR
+into Cranelift’s IR.</p>
+<pre class="mermaid">flowchart LR
+  src[Rust source] --&gt; fe["rustc frontend&lt;br/&gt;parse · types · borrowck"] --&gt; mir[MIR]
+  mir --&gt; llvm["rustc_codegen_llvm&lt;br/&gt;→ LLVM IR → LLVM"] --&gt; obj1[machine code]
+  mir --&gt; cgclif["cg_clif&lt;br/&gt;→ CLIF"] --&gt; cl["Cranelift"] --&gt; obj2[machine code]
+  cgclif -. "same CLIF" .-&gt; clifv["&lt;b&gt;clifv&lt;/b&gt; (Lean)"] --&gt; obj3[AArch64 code&lt;br/&gt;+ proofs]</pre>
+<p><strong>Cranelift</strong> is a code generator written in Rust. It
+began at Mozilla in 2016, under the name Cretonne, to compile
+WebAssembly in Firefox. It now lives in the Bytecode Alliance alongside
+<strong>Wasmtime</strong>, a standalone WebAssembly runtime. Its design
+follows from what a WebAssembly runtime needs:</p>
+<ul>
+<li><strong>Compile time matters.</strong> A runtime receives code when
+a module is loaded and must compile it right away, often just in
+time.</li>
+<li><strong>A miscompilation is a security hole.</strong> The runtime
+executes untrusted code inside a sandbox, so a wrong bounds check is a
+sandbox escape.</li>
+<li><strong>The compiler must be small and memory-safe.</strong> It runs
+inside the runtime’s own process.</li>
+</ul>
+<p>LLVM optimises much harder, but it is too slow and too large for that
+job. Cranelift therefore trades some code quality for compile speed and
+simplicity: a 2020 study measured an order of magnitude faster
+compilation for code roughly half as fast. Today it is the default
+compiler of Wasmtime, an optional backend of the Wasmer runtime, and,
+since October 2023, an optional <code>rustc</code> backend on nightly
+for faster debug builds. Firefox tried it and later dropped it.</p>
+<p>Within the Rust stack, Cranelift replaces LLVM’s whole pipeline: the
+IR, the optimizer and the code generator. The <strong>frontend</strong>
+that feeds it, cg_clif, is a real compiler stage of about 19 k lines,
+not a mere parser. By the time it runs, <code>rustc</code> has already
+done parsing, type and borrow checking, trait resolution,
+monomorphisation and MIR optimisation, including inlining. cg_clif then
+translates each monomorphised function into CLIF:</p>
+<ul>
+<li>it breaks structs and enums into scalars and memory accesses,
+following <code>rustc</code>’s type layouts;</li>
+<li>it implements Rust’s calling convention on top of CLIF
+signatures;</li>
+<li>it expands intrinsics: atomics, and SIMD lane by lane through
+memory;</li>
+<li>it emits panic paths and the landing pads for unwinding.</li>
+</ul>
+<p>It optimises little, but it makes many binding decisions about layout
+and the ABI. clifv trusts it.</p>
+<p>clifv replaces the last stage again. It takes the CLIF that cg_clif
+produces and generates the AArch64 code that Cranelift would have
+generated, with a proof attached. <code>cargo fv build|test</code> runs
+the whole chain on real crates. A function clifv cannot handle keeps
+cg_clif’s code, so a build never fails because of clifv.</p>
+<h2 id="clif-and-how-cranelift-compiles-it">2. CLIF and how Cranelift
+compiles it</h2>
+<h3 id="clif-in-one-minute">CLIF in one minute</h3>
+<p><strong>CLIF</strong> (Cranelift IR) plays the same role for
+Cranelift that LLVM IR plays for LLVM. Both are low-level and
+independent of the target. Each describes one function as a list of
+<strong>basic blocks</strong>: straight-line instruction sequences that
+end in a jump, branch or return. Both are in <strong>SSA form</strong>:
+every value is defined exactly once and has a type. CLIF is the simpler
+of the two:</p>
+<ul>
+<li><strong>Machine types only:</strong>
+<code>i8</code>…<code>i128</code>, <code>f32</code>, <code>f64</code>
+and vectors. There are no pointer types (a pointer is an integer) and no
+structs; the frontend has already broken those down.</li>
+<li><strong>Block parameters instead of φ-nodes.</strong> Where control
+flow merges, LLVM uses φ-instructions; CLIF passes values to a block the
+way a call passes arguments (<code>block2(v5: i64)</code> below).</li>
+<li><strong>Explicit trap behaviour.</strong> Memory accesses carry
+flags such as <code>notrap</code> and <code>aligned</code>, and an
+operation like division names its trap.</li>
+</ul>
+<pre><code>function %clamp_add(i64, i64) -&gt; i64 {
+block0(v0: i64, v1: i64):
+    v2 = iadd v0, v1
+    v3 = iconst.i64 100
+    v4 = icmp sgt v2, v3
+    brif v4, block1, block2(v2)
+block1:
+    jump block2(v3)
+block2(v5: i64):
+    return v5
+}</code></pre>
+<p>Two traits of Cranelift are often singled out. Neither is
+unusual:</p>
+<ul>
+<li><strong>Typed SSA</strong> is the norm (LLVM, GCC’s GIMPLE, MLIR).
+What sets CLIF apart is how low-level its types are.</li>
+<li><strong>Compiling one function at a time</strong> is how code
+generators work, LLVM’s included. LLVM’s cross-function optimisations
+(inlining, interprocedural analysis) happen earlier, in its optimizer
+over a whole module. Cranelift has no such module-level stage, and it
+only ever sees one function. That lets it compile functions in parallel,
+lazily in a JIT, and cache them individually. Cross-function
+optimisation is left to its user. Inlining is still possible: Cranelift
+offers it “as a library”, where the user decides which calls to inline
+and supplies the callee’s body. cg_clif relies on <code>rustc</code>’s
+own MIR inliner instead.</li>
+</ul>
+<h3 id="the-pipeline-stage-by-stage">The pipeline, stage by stage</h3>
+<pre class="mermaid">flowchart TB
+  subgraph clif ["on CLIF"]
+    direction LR
+    A[CLIF] --&gt; V[1. verifier] --&gt; G["2. CFG +&lt;br/&gt;dominator tree"] --&gt; C["3. cleanup"] --&gt; O["4. e-graph&lt;br/&gt;(optional)"]
+  end
+  subgraph mach ["on machine instructions"]
+    direction LR
+    L["5. lowering (ISLE)&lt;br/&gt;→ VCode"] --&gt; R["6. register&lt;br/&gt;allocation"] --&gt; E[7. emission] --&gt; F[8. finalisation] --&gt; M[machine code]
+  end
+  clif --&gt; mach</pre>
+<ol type="1">
+<li><strong>Verifier.</strong> It checks that the CLIF is well formed:
+types match, every value is defined before every use, and every block
+ends in a terminator. “Verifying CLIF” means this check, not formal
+verification.</li>
+<li><strong>Control-flow graph (CFG) and dominator tree.</strong> CLIF
+already lists its blocks and branches, so building the CFG is cheap: one
+scan of the terminators records each block’s successors and
+predecessors. Block A <strong>dominates</strong> block B if every path
+from the function’s entry to B passes through A. The immediate
+dominators form a tree. Later passes use it to find loops, decide where
+code may safely move, and check that every definition precedes its
+uses.</li>
+<li><strong>Cleanup.</strong> Blocks unreachable from the entry are
+deleted. Then <strong>constant phis</strong> are removed: a block
+parameter that receives the same value on every incoming edge is
+replaced by that value. In the example, if <code>block1</code> also
+jumped with <code>v2</code>, then <code>v5</code> would always be
+<code>v2</code> and could disappear, saving a move.</li>
+<li><strong>Mid-end optimisation (optional).</strong> An e-graph applies
+a few hundred rewrite rules at once, then extracts a cheap equivalent.
+Cranelift skips this stage at <code>opt_level=none</code>, the setting
+of the test outputs compared in section 7.</li>
+<li><strong>Lowering (instruction selection).</strong> CLIF becomes
+<strong>VCode</strong>: real instructions of the target
+(<code>add</code>, <code>ldr</code>, <code>cbz</code>…) over an
+unlimited supply of <em>virtual</em> registers, still arranged in
+blocks. Think of assembly with infinitely many registers. The choice of
+instructions is made by ISLE rules. A rule can fuse several CLIF
+instructions into one machine instruction; for example, a shift feeding
+an add becomes one <code>add</code> with a shifted operand.</li>
+<li><strong>Register allocation</strong> (the <code>regalloc2</code>
+library). Virtual registers are mapped onto the 31 real ones, inserting
+moves and spills to the stack where they run out. This has to come after
+lowering: the allocator needs the actual instructions, with their
+constraints (which operands must sit in fixed registers, what a call
+clobbers). LLVM and GCC use the same order.</li>
+<li><strong>Emission.</strong> Only now are the register assignments and
+spill slots known, so only now can the frame be laid out: its size, and
+which callee-saved registers the prologue must save. Each instruction is
+encoded into a buffer, with branch targets still symbolic labels.</li>
+<li><strong>Finalisation.</strong> Once every instruction’s size is
+known, the labels become concrete offsets. Branches are simplified: a
+jump to the next block is dropped and a branch over a jump is inverted.
+Branches that cannot reach their target get a long-range form, and
+constant pools and relocations are written. The steps are split this way
+because each one needs information that only the previous step
+produces.</li>
+</ol>
+<p>Older descriptions of Cranelift, from before its 2020 backend
+rewrite, include a <strong>legalisation</strong> stage. It was not an
+error check. It repeatedly replaced each CLIF instruction the target had
+no instruction for by a sequence of simpler CLIF instructions, until
+every instruction mapped one-to-one onto a machine instruction. The ISLE
+lowering rules replaced it, because a rule can also map <em>several</em>
+CLIF instructions onto <em>one</em> machine instruction. clifv’s own
+<code>i128</code> legalisation is a CLIF-to-CLIF pass in that older
+sense.</p>
+<h3 id="isle-rules-as-data">ISLE: rules as data</h3>
+<p>Most of stages 4 and 5 is written not in Rust but in
+<strong>ISLE</strong>, a small pattern-matching language for rewrite
+rules. For example, an AArch64 rule says, roughly, “an <code>iadd</code>
+whose operand is a small constant becomes an <code>add</code> with an
+immediate”. Because the rules are data, a tool can export them
+mechanically. clifv runs Cranelift’s 1,165 AArch64 lowering rules in
+Lean, exported from the ISLE sources, and that is a large part of why
+verifying Cranelift is tractable at all.</p>
+<h2 id="why-cranelift-is-so-much-smaller-than-llvm">3. Why Cranelift is
+so much smaller than LLVM</h2>
+<p>Measured with <code>tokei</code> on the versions in use: Cranelift
+0.136.1 (Wasmtime 49.0.1) and LLVM 22.1.8. The counts are code lines, so
+comments and blank lines are excluded. Test suites are excluded, and so
+is Cranelift’s in-tree verification tooling (VeriISLE, section 4).</p>
+<table>
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 26%" />
+<col style="width: 26%" />
+<col style="width: 26%" />
+</colgroup>
+<thead>
+<tr>
+<th></th>
+<th style="text-align: right;">Cranelift</th>
+<th style="text-align: right;">LLVM</th>
+<th style="text-align: right;">Ratio</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Whole code generator</td>
+<td style="text-align: right;"><strong>186 k</strong> (157 k Rust + 29 k
+ISLE)</td>
+<td style="text-align: right;"><strong>2.88 M</strong> (2.38 M C/C++ +
+0.50 M TableGen), <code>llvm/lib</code> + <code>llvm/include</code></td>
+<td style="text-align: right;">≈ 15×</td>
+</tr>
+<tr>
+<td>Everything needed for AArch64</td>
+<td style="text-align: right;">72 k (shared code + AArch64 backend +
+ISLE)</td>
+<td style="text-align: right;">921 k (IR, analyses, optimizer, CodeGen,
+MC, AArch64 target)</td>
+<td style="text-align: right;">≈ 13×</td>
+</tr>
+<tr>
+<td>Without the mid-level optimizer</td>
+<td style="text-align: right;">72 k</td>
+<td style="text-align: right;">498 k (CodeGen, MC, AArch64 target)</td>
+<td style="text-align: right;">≈ 7×</td>
+</tr>
+<tr>
+<td><code>rustc</code> glue crate</td>
+<td style="text-align: right;">19 k
+(<code>rustc_codegen_cranelift</code>)</td>
+<td style="text-align: right;">25 k
+(<code>rustc_codegen_llvm</code>)</td>
+<td style="text-align: right;">≈ 1×</td>
+</tr>
+<tr>
+<td><em>For scale:</em> clifv’s Lean library</td>
+<td style="text-align: right;">1.09 M</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+</tr>
+</tbody>
+</table>
+<p>The remembered figure of “300 k versus 1.5 M” understates the gap:
+the full LLVM library is nearly 3 M lines of code. The difference comes
+from scope:</p>
+<ul>
+<li><strong>Targets.</strong> Cranelift has four (x86-64, AArch64,
+RISC-V 64, s390x) plus Pulley, its own interpreter bytecode. LLVM ships
+25.</li>
+<li><strong>Optimisation.</strong> LLVM’s optimizer alone
+(<code>lib/Transforms</code> and <code>lib/Analysis</code>, 363 k lines)
+is larger than all of Cranelift. Cranelift’s mid-end is a few thousand
+lines of rules on one e-graph, with no auto-vectoriser, little inlining
+and no link-time or profile-guided optimisation.</li>
+<li><strong>One path.</strong> CLIF goes straight to machine
+instructions through ISLE rules. LLVM has two instruction selectors
+(SelectionDAG and GlobalISel), several register allocators, and a
+machine-IR layer between them.</li>
+<li><strong>A DSL for the target-specific part.</strong> The AArch64
+lowering is about 6 k lines of ISLE. LLVM’s AArch64 target is 115 k
+lines of C++ plus 75 k lines of TableGen.</li>
+</ul>
+<h2 id="what-it-means-to-verify-a-cranelift-backend">4. What it means to
+verify a Cranelift backend</h2>
+<h3 id="what-exists-upstream">What exists upstream</h3>
+<p>Cranelift has no official formal specification. In practice its
+semantics is defined by three things: its documentation, an executable
+<strong>reference interpreter</strong> (the
+<code>cranelift-interpreter</code> crate), and about 1,300 test files.
+Its correctness rests mainly on heavy fuzzing. Several verification
+efforts have been added over time:</p>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>When</th>
+<th>What</th>
+<th>What it covers</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>from 2021</td>
+<td><strong>regalloc2 checker</strong></td>
+<td>Checks each register allocation symbolically while fuzzing. Optional
+in production.</td>
+</tr>
+<tr>
+<td>2023</td>
+<td><strong>Proof-carrying code</strong></td>
+<td>Checks, after lowering, that compiled WebAssembly memory accesses
+stay inside the sandbox. Experimental; no longer in the tree as of
+Cranelift 0.136.</td>
+</tr>
+<tr>
+<td>2024</td>
+<td><strong>Crocus / VeriISLE</strong> (ASPLOS 2024)</td>
+<td>Verifies individual ISLE lowering rules with SMT solvers against
+hand-written specifications of CLIF and of AArch64 and x86-64
+instructions. Reproduced known sandbox-escape bugs.</td>
+</tr>
+<tr>
+<td>2025</td>
+<td><strong>Arrival</strong> (OOPSLA 2025)</td>
+<td>Derives AArch64 specifications automatically from Arm’s official ASL
+semantics. Verifies nearly all AArch64 rules reachable from WebAssembly
+and finds new bugs. Its specifications have shipped in the Cranelift
+tree since Wasmtime 47.</td>
+</tr>
+</tbody>
+</table>
+<p>These efforts check <strong>rules one at a time</strong>, not the
+compiled program end to end. They also need upkeep. In April 2026 a
+critical AArch64 lowering bug, introduced in Wasmtime 32, was found by
+LLM-based auditing rather than by the verifier, because the verification
+model had not been updated for the new rules. Re-run on the current
+rules, the verifier flags the bug too. Wasmtime has since committed to
+running it in CI.</p>
+<h3 id="clifvs-approach">clifv’s approach</h3>
+<p>clifv is a <strong>reimplementation, not a proof about the Rust
+code</strong>. The compiler is a Lean program, so the code the theorems
+talk about is the code that runs: there is no extraction or translation
+step. It follows Cranelift’s algorithms closely, and its instruction
+selection executes Cranelift’s own exported ISLE rules. Byte-for-byte
+agreement with stock Cranelift is then evidence that it makes the same
+choices. Correctness is stated against two specifications that are
+themselves written in Lean:</p>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Specification</th>
+<th>What it is</th>
+<th>How it is checked (not proved)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong><code>Clif.run</code></strong>: the semantics of CLIF</td>
+<td>An executable interpreter: a function, its arguments and fuel go in;
+the outcome <em>returned values and memory</em>, <em>trapped with code
+c</em>, <em>stuck</em> (undefined behaviour) or <em>out of fuel</em>
+comes out. About 7.7 k lines in <code>FV/Clif</code>.</td>
+<td>Random programs for every supported opcode are compared bit-exactly
+against Cranelift’s interpreter and native AArch64 runs (394 opcode
+keys, 0 disagreements). Each opcode is also proved equal to a Lean
+transcription of VeriISLE’s CLIF specification.</td>
+</tr>
+<tr>
+<td><strong>The Arm model</strong></td>
+<td>AArch64 instruction semantics ported from LNSym, which transcribes
+Arm’s ASL. About 15 k lines in <code>FV/Arm</code>.</td>
+<td>Every instruction form the encoder can produce is co-simulated
+against <code>qemu</code> (424 forms, 0 failures), nightly in CI.</td>
+</tr>
+</tbody>
+</table>
+<pre class="mermaid">flowchart LR
+  P["CLIF function"] --&gt;|"Lean compiler&lt;br/&gt;(executable)"| B["AArch64 bytes"]
+  P -.-&gt;|"Clif.run (spec)"| O1["outcome:&lt;br/&gt;returned / trapped"]
+  B -.-&gt;|"Arm model (spec)"| O2["machine run"]
+  O1 &lt;--&gt;|"theorem:&lt;br/&gt;refinement"| O2</pre>
+<h3 id="why-not-verify-cranelifts-rust-code-directly">Why not verify
+Cranelift’s Rust code directly?</h3>
+<p>A tool such as <strong>Aeneas</strong> translates Rust into Lean,
+after which one could prove theorems about Cranelift itself. The
+project’s records give no reason for not doing this; its plan mentions
+Aeneas only for an unrelated, unstarted route. Two reasons are likely
+[our inference]:</p>
+<ul>
+<li><strong>Aeneas does not yet support the Rust that Cranelift is
+written in.</strong> It handles safe Rust without closures or function
+pointers, nested loops, interior mutability or nested borrows in
+signatures. A 186 k-line compiler built on mutable arenas and
+index-based data structures uses all of these.</li>
+<li><strong>A reimplementation can be designed for proof.</strong> The
+difficult heuristics, such as register allocation, can stay unproved
+behind a proved checker with a proved fallback. A proof about the Rust
+code would have to cover them as written.</li>
+</ul>
+<p>The cost of reimplementing is that clifv must be kept in step with
+upstream Cranelift. That is what the byte-for-byte comparison
+measures.</p>
+<h3 id="why-this-is-feasible-at-all">Why this is feasible at all</h3>
+<ul>
+<li>The thing being verified is about 15× smaller than LLVM.</li>
+<li>The target-specific knowledge is data (ISLE rules) and can be
+imported and reasoned about uniformly.</li>
+<li>Both ends have independent oracles: Cranelift’s interpreter for
+CLIF, and Arm’s ASL plus <code>qemu</code> for the machine.</li>
+<li>Heuristics need not be proved: a register allocator’s output can be
+checked by a proved checker (section 5).</li>
+<li>Lean is both the programming language and the prover.</li>
+</ul>
+<h2 id="the-compilers-components-and-how-each-is-assured">5. The
+compiler’s components and how each is assured</h2>
+<p>clifv uses four kinds of assurance. The difference matters, because
+“verified” means something slightly different for each:</p>
+<ul>
+<li><strong>Proved:</strong> the pass itself is proved correct, once and
+for all.</li>
+<li><strong>Proved checker:</strong> an untrusted pass (possibly
+external code) runs, then a proved checker validates its result for this
+function (<em>translation validation</em>). Further theorems show that
+the checker never rejects what the pass produces on in-scope input.</li>
+<li><strong>Proved fallback:</strong> if a check fails, the compiler
+uses a simpler path that is proved directly. A rejection costs code
+quality, never correctness.</li>
+<li><strong>Trusted:</strong> taken on faith and tested.</li>
+</ul>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Stage</th>
+<th>What it does</th>
+<th>Assurance</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>rustc + cg_clif</td>
+<td>Rust → CLIF</td>
+<td><strong>Trusted</strong> (outside the scope by design)</td>
+</tr>
+<tr>
+<td>Dump decoding and linking spec</td>
+<td>cg_clif’s output files → Lean program</td>
+<td>Proved</td>
+</tr>
+<tr>
+<td><code>i128</code> legalisation</td>
+<td>Splits 128-bit values into pairs of 64-bit values</td>
+<td>Proved checker (complete on a decidable input condition)</td>
+</tr>
+<tr>
+<td>Mid-end optimiser (<code>--opt</code> only)</td>
+<td>e-graph-style rewrites, GVN, DCE, LICM</td>
+<td>Rewrite rules proved one by one (two wrong upstream rules disabled);
+passes checked, with a proved fallback</td>
+</tr>
+<tr>
+<td>Constant-phi removal</td>
+<td>Cranelift’s <code>remove_constant_phis</code></td>
+<td>Proved checker, with a proved fallback</td>
+</tr>
+<tr>
+<td>Instruction selection</td>
+<td>Runs Cranelift’s ISLE rules</td>
+<td>Proved, once for all rules</td>
+</tr>
+<tr>
+<td>Lowering driver, <code>prepare</code></td>
+<td>Builds the VCode; splits critical edges; orders blocks</td>
+<td>Proved checkers, proved complete on decidable input conditions</td>
+</tr>
+<tr>
+<td>Register allocation</td>
+<td>Lean linear scan, or regalloc2</td>
+<td>Proved checker (<code>checkAlloc</code>), with a proved
+spill-everything fallback</td>
+</tr>
+<tr>
+<td>Frame, emission, encoding</td>
+<td>Prologue and epilogue, branch relaxation, bytes</td>
+<td>Proved (<code>decode (encode i) = i</code>)</td>
+</tr>
+<tr>
+<td>Linking the executable</td>
+<td>Placement, relocations, ELF</td>
+<td>Proved (<code>Link.compileExe</code>), with no per-program
+certificate</td>
+</tr>
+<tr>
+<td>Unwind tables</td>
+<td><code>.eh_frame</code>, LSDA for exceptions</td>
+<td>Mostly proved; the unwinder model is trusted</td>
+</tr>
+</tbody>
+</table>
+<h2 id="the-theorems">6. The theorems</h2>
+<h3 id="how-they-are-organised">How they are organised</h3>
+<p>The proof is layered. Each layer relates the run of one
+representation to the run of the next, and the layers compose:</p>
+<pre class="mermaid">flowchart LR
+  C["CLIF run&lt;br/&gt;(Clif.run)"] --&gt;|"IselSim"| V["VCode run"] --&gt;|"PrepareCorrect"| VP["prepared VCode"] --&gt;|"RegLevelCorrect"| A["Arm run&lt;br/&gt;(Arm model)"]</pre>
+<p>The composite theorem for one function is
+<code>E2E.backend_correct_final</code> (<code>FV/E2E/Final.lean</code>).
+Further theorems extend it outward:</p>
+<ul>
+<li>a whole linked program
+(<code>E2E.backend_correct_linked</code>);</li>
+<li>the bytes of the executable file
+(<code>Link.DeadCleanup.compileExe_correct</code>);</li>
+<li>the program exactly as cg_clif wrote it to disk
+(<code>Front.bundle_correct_raw</code>).</li>
+</ul>
+<p>Every function that <code>cargo fv</code> reports <em>verified</em>
+is covered by one of them.</p>
+<h3 id="what-correct-means">What “correct” means</h3>
+<p>The conclusion is a <strong>refinement</strong>: whatever the CLIF
+semantics says the function does, the Arm code does too. Verbatim from
+<code>FV/E2E/Statement.lean</code>:</p>
+<pre class="lean"><code>/-- What the Arm run does for a CLIF outcome (`stuck`/`outOfFuel`: no claim). -/
+def ArmRefines (fb : FnBin) (base ra : BitVec 64) (astep : Arm.ArmState → Arm.ArmState)
+    (s : Arm.ArmState) : Clif.Outcome → Prop
+  | .returned vals cm =&gt; ∃ n, ArmRet ra s (runX astep n s) ∧
+      (∀ (j : Nat) v, vals[j]? = some v → XHolds v (xreg j (runX astep n s))) ∧
+      MemAgree cm (runX astep n s)
+  | .trapped c =&gt; ∃ n, TrapAt fb base c (runX astep n s)
+  | .stuck _ | .outOfFuel =&gt; True</code></pre>
+<p>In words:</p>
+<ul>
+<li><strong>If the CLIF function returns</strong> values
+<code>vals</code> with final memory <code>cm</code>, then after some
+number of steps the machine is back at the caller’s return address. The
+results are in <code>x0, x1, …</code>, the stack pointer and
+callee-saved registers are restored, and memory agrees with
+<code>cm</code>.</li>
+<li><strong>If it traps</strong> with code <code>c</code>, the machine
+stops at a trap site with code <code>c</code>.</li>
+<li><strong>If the CLIF run is stuck</strong> (undefined behaviour)
+<strong>or runs out of fuel</strong>, nothing is claimed.</li>
+</ul>
+<p>This is the shape of CompCert’s semantic preservation, restricted to
+terminating and trapping runs. There are no I/O traces, and nothing is
+claimed for non-terminating runs.</p>
+<h3 id="soundness-and-completeness">Soundness and completeness</h3>
+<ul>
+<li><strong>Soundness</strong> in the usual sense is the refinement
+theorem above.</li>
+<li><strong>Completeness</strong> here means <strong>totality</strong>:
+the compiler and its checkers accept every function in the declared
+input scope. Examples are <code>prepCheck_complete</code>,
+<code>lowerCheck_complete</code>, <code>optimize_complete</code> and
+<code>compileExe_total_*</code>. So a checker can never turn a correct
+compilation into a rejection.</li>
+<li><strong>Byte-for-byte agreement with stock Cranelift</strong> is
+measured, not proved (section 7).</li>
+</ul>
+<h3 id="abi-conformance">ABI conformance</h3>
+<p>An <strong>instruction set architecture (ISA)</strong> is what the
+hardware provides: registers, instructions and their encodings. An
+<strong>application binary interface (ABI)</strong> is the set of
+software conventions layered on top, so that separately compiled code
+can call each other and link. For 64-bit Arm on Linux, the ABI is
+<strong>AAPCS64</strong> together with the ELF and system conventions.
+The table lists what an ABI fixes and how much of it clifv’s theorem
+states:</p>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>The ABI fixes…</th>
+<th>On AArch64 Linux</th>
+<th>In clifv’s theorem?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Where arguments go</td>
+<td>Integers in <code>x0</code>–<code>x7</code> and floats in
+<code>v0</code>–<code>v7</code>, the rest on the stack</td>
+<td><strong>Stated</strong></td>
+</tr>
+<tr>
+<td>Where results go</td>
+<td><code>x0…</code> (and <code>v0…</code>); a large result is written
+through a pointer passed in <code>x8</code></td>
+<td><strong>Stated</strong></td>
+</tr>
+<tr>
+<td>Which registers a callee must preserve</td>
+<td><code>x19</code>–<code>x28</code>, the frame pointer
+<code>x29</code>, the low halves of <code>v8</code>–<code>v15</code>;
+all others may be overwritten</td>
+<td><strong>Stated</strong></td>
+</tr>
+<tr>
+<td>The return address and the stack</td>
+<td>Return address in <code>x30</code>; the stack grows down,
+<code>sp</code> 16-byte aligned at every call and restored on
+return</td>
+<td><strong>Stated</strong></td>
+</tr>
+<tr>
+<td>Frame layout</td>
+<td>Frame-pointer chain (<code>x29</code>/<code>x30</code> pair), frame
+records</td>
+<td>Follows Cranelift, not stated</td>
+</tr>
+<tr>
+<td>Reserved registers</td>
+<td><code>x18</code> platform register,
+<code>x16</code>/<code>x17</code> scratch for linker veneers,
+<code>TPIDR_EL0</code> for thread-local storage</td>
+<td>Thread-local storage by a trusted hook</td>
+</tr>
+<tr>
+<td>Data layout</td>
+<td>Sizes and alignment of types, little-endian, struct layout</td>
+<td>Little-endian in both semantics; struct layout is
+<code>rustc</code>’s (trusted)</td>
+</tr>
+<tr>
+<td>Exceptions and unwinding</td>
+<td>DWARF call-frame information and LSDA tables</td>
+<td>Tables proved; the unwinder model trusted</td>
+</tr>
+<tr>
+<td>Object files and linking</td>
+<td>ELF, <code>R_AARCH64_*</code> relocations, symbols,
+thread-local-storage models</td>
+<td>Linking proved (<code>compileExe</code>)</td>
+</tr>
+<tr>
+<td>System calls</td>
+<td>Linux syscall numbers and registers</td>
+<td>Outside: in musl, trusted</td>
+</tr>
+</tbody>
+</table>
+<p>The rows marked <strong>Stated</strong> are part of the theorem’s
+statement. They are a trusted transcription of AAPCS64 <em>as Cranelift
+implements it</em>, not proved against an independent formalisation of
+AAPCS64. Only AArch64 is covered; clifv has no RISC-V or x86
+backend.</p>
+<h3 id="what-the-theorems-assume">What the theorems assume</h3>
+<p>The premises of <code>backend_correct_final</code> fall into four
+groups:</p>
+<ol type="1">
+<li><strong>The compiler ran and accepted the function.</strong> These
+conditions are decided by code, per function.</li>
+<li><strong>The machine is entered correctly.</strong> Code is loaded,
+the program counter is at the entry, the stack is aligned and big
+enough, and arguments are placed per AAPCS64.</li>
+<li><strong>Callees and the environment keep their contracts.</strong> A
+called function behaves as its CLIF declaration says and preserves
+callee-saved state. Thread-local storage and the linker’s symbol
+addresses are as stated.</li>
+<li><strong>The run only traps explicitly.</strong> Traps come from
+<code>trap</code> instructions and divisions, never from memory faults,
+because the Arm model has no memory faults.</li>
+</ol>
+<p>Beyond the premises, the <strong>trusted base</strong> is:</p>
+<ul>
+<li>Lean’s kernel;</li>
+<li><code>Clif.run</code> and the Arm model;</li>
+<li>the statement itself, including its AAPCS64 transcription;</li>
+<li>rustc and cg_clif;</li>
+<li>code outside the program (std, musl, functions left to cg_clif) and
+the OS loader;</li>
+<li>the unwinder model.</li>
+</ul>
+<p>Two hygiene measures keep the statements honest:</p>
+<ul>
+<li>Every top-level theorem has a <strong>non-vacuity witness</strong>:
+a concrete instance where all premises hold. These witnesses have caught
+six unsatisfiable premises so far.</li>
+<li>An <strong>axiom audit</strong> (261 files) checks that only Lean’s
+three standard axioms are used. There is no <code>sorry</code> and no
+custom axiom. The compiler theorems use no
+<code>native_decide</code>.</li>
+</ul>
+<h3 id="optimisation-passes">Optimisation passes</h3>
+<p>The semantics that optimisations must preserve is again
+<code>Clif.run</code>. The mid-end’s theorem
+(<code>Opt.optimize_sim_proven</code>) is a simulation: every outcome of
+the optimised function is an outcome of the original. Cranelift’s
+rewrite rules are proved one by one with a kernel-checked bit-vector
+tactic: 1,191 of 1,193 rule roots. The other two are wrong. For
+out-of-range shift amounts they build ill-typed IR
+(<code>shifts.isle</code> rules 84 and 88), so clifv disables them. The
+surrounding passes (GVN, DCE, LICM) are checked, with a proved fallback.
+Note that the default <code>cargo fv</code> mode and Cranelift’s tests
+run at <code>opt_level=none</code>, so the byte-agreement numbers below
+do not exercise the mid-end.</p>
+<h2 id="status">7. Status</h2>
+<h3 id="scope">Scope</h3>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>In scope</th>
+<th>Partial</th>
+<th>Out of scope</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Integers <code>i8</code>–<code>i64</code>: arithmetic, memory,
+control flow, calls (direct, indirect, <code>try_call</code>), atomics,
+thread-local storage, exceptions</td>
+<td><code>i128</code> (by legalisation); floats
+(<code>f32</code>/<code>f64</code>, in progress); tail calls (self
+only)</td>
+<td>SIMD and vectors; other targets</td>
+</tr>
+</tbody>
+</table>
+<h3 id="agreement-with-stock-cranelift-on-its-own-test-suite">Agreement
+with stock Cranelift on its own test suite</h3>
+<p>This is measured in CI on every pull request. The suite is
+Cranelift’s filetests: 4,455 AArch64 function outputs, each compiled
+under its file’s declared settings.</p>
+<table>
+<colgroup>
+<col style="width: 30%" />
+<col style="width: 40%" />
+<col style="width: 30%" />
+</colgroup>
+<thead>
+<tr>
+<th></th>
+<th style="text-align: right;">Outputs</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Exact</strong></td>
+<td style="text-align: right;">1,996 (44.8%)</td>
+<td>Bytes, relocations and trap records identical to stock</td>
+</tr>
+<tr>
+<td><strong>Honest</strong></td>
+<td style="text-align: right;">1,713 (38.5%)</td>
+<td>Exact, and produced by the proved compiler with no unproved
+step</td>
+</tr>
+<tr>
+<td>Differ</td>
+<td style="text-align: right;">7</td>
+<td>Compiled, bytes differ</td>
+</tr>
+<tr>
+<td>Rejected: unsupported operation</td>
+<td style="text-align: right;">1,896</td>
+<td>About 1,257 of them are SIMD</td>
+</tr>
+<tr>
+<td>Rejected: unsupported setting</td>
+<td style="text-align: right;">556</td>
+<td>For example <code>opt_level=speed</code>, <code>is_pic=false</code>,
+<code>has_lse</code></td>
+</tr>
+</tbody>
+</table>
+<p>The two agreement numbers differ for a reason. The comparison first
+ran through a harness that applied a few unproved transformations. The
+<strong>honest</strong> metric (added 13 November) counts only outputs
+that the proved compiler produces with the test’s settings as its input.
+Two days of work moved it from 76 to 1,713, mainly by making the proved
+compiler itself handle frameless leaf functions.</p>
+<h3 id="built-but-not-proved">Built but not proved</h3>
+<ul>
+<li><strong>The comparison harness’s native <code>i128</code>
+lowering:</strong> about 199 exact outputs depend on it.</li>
+<li>Two smaller harness steps: dropping unused loads, and stack-argument
+addressing.</li>
+<li><strong>The driver code that decides, per function, which theorem
+applies.</strong> It is trusted.</li>
+<li><strong>Optimisation with Cranelift’s unproved rule sets</strong>
+(<code>--opt</code>).</li>
+</ul>
+<p>The 7 differing outputs need either a large proof refactor
+(stack-slot layout) or a change to a trusted statement (calls under the
+<code>preserve_all</code> convention), or they are a deliberate
+difference that avoids a Cranelift bug.</p>
+<h3 id="work-packages">Work packages</h3>
+<p>Most of the original plan is done: validator completeness, totality,
+linking without certificates, the stack bound, all mid-end rules, i128,
+unwinding, and the trusted-base reductions for TLS, atomics and the Arm
+and CLIF fidelity checks. Still open are floats (S11), SIMD (S12), tail
+calls beyond self calls (S8), the standard-library contracts (T3), and
+stack-read semantics (SEM1). The full table is in
+<code>docs/TO-PROVE.md</code> §8.</p>
+<h2 id="the-lean-library">8. The Lean library</h2>
+<h3 id="size-and-shape">Size and shape</h3>
+<table>
+<colgroup>
+<col style="width: 27%" />
+<col style="width: 36%" />
+<col style="width: 36%" />
+</colgroup>
+<thead>
+<tr>
+<th>Part</th>
+<th style="text-align: right;">Lean files</th>
+<th style="text-align: right;">Lines</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>FV/Backend</code>: instruction selection, allocation,
+emission, and their proofs</td>
+<td style="text-align: right;">3,446</td>
+<td style="text-align: right;">616 k</td>
+</tr>
+<tr>
+<td><code>FV/E2E</code>: end-to-end theorems</td>
+<td style="text-align: right;">1,206</td>
+<td style="text-align: right;">312 k</td>
+</tr>
+<tr>
+<td><code>FV/Isle</code>: ISLE syntax, interpreter, generated rule
+data</td>
+<td style="text-align: right;">52</td>
+<td style="text-align: right;">86 k</td>
+</tr>
+<tr>
+<td><code>FV/Opt</code>: mid-end and rule proofs</td>
+<td style="text-align: right;">252</td>
+<td style="text-align: right;">80 k</td>
+</tr>
+<tr>
+<td><code>FV/Concurrency</code>: atomics memory model</td>
+<td style="text-align: right;">230</td>
+<td style="text-align: right;">71 k</td>
+</tr>
+<tr>
+<td><code>FV/Link</code>, <code>FV/Front</code>: linker, frontend
+decoding</td>
+<td style="text-align: right;">214</td>
+<td style="text-align: right;">41 k</td>
+</tr>
+<tr>
+<td><code>FV/Arm</code>, <code>FV/Clif</code>: the two
+specifications</td>
+<td style="text-align: right;">99</td>
+<td style="text-align: right;">23 k</td>
+</tr>
+<tr>
+<td><code>FVTest</code>, <code>crate-proofs</code></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;">74 k</td>
+</tr>
+<tr>
+<td><strong>Total</strong></td>
+<td style="text-align: right;"><strong>5,832</strong></td>
+<td style="text-align: right;"><strong>1.31 M</strong> (1.09 M
+code)</td>
+</tr>
+</tbody>
+</table>
+<p>The library holds about 54,000 theorems. Of its lines, 175 k are
+generated (rule data and kernel-checked tables). A further 325 k belong
+to the “Stock” families: proofs for individual lowering patterns that
+the comparison needed. The library is core Lean and <code>Std</code>
+only. Mathlib is kept to an isolated leaf package (the IEEE float
+bridge), because importing it upstream of the library measurably slowed
+every module.</p>
+<h3 id="build-infrastructure">Build infrastructure</h3>
+<p>A plain <code>lake build</code> would run every ready module at once
+and exhaust memory. Several modules peak above 10 GB, and runaway proofs
+once reached 58 GB. The project therefore builds through its own
+tooling:</p>
+<ul>
+<li><code>memcap.sh</code> runs each command in a memory-capped cgroup,
+so a runaway process dies alone.</li>
+<li><code>lake-serial-build.py</code> schedules modules one by one, each
+with a cap of 1.2× its recorded peak memory. Light modules are packed
+side by side; heavy ones go one at a time through a machine-wide
+queue.</li>
+<li>A shared, content-addressed artifact cache lets worktrees and CI
+reuse each other’s builds. A warm full check takes 1.9 s instead of 27
+minutes.</li>
+<li>A sharded CI “Full gate” builds in waves on up to 16 runners and
+runs the whole gate list in about 2–3 hours.</li>
+</ul>
+<h3 id="proof-automation">Proof automation</h3>
+<ul>
+<li><strong><code>kbv</code></strong>: a kernel-checked bit-vector
+decision procedure. It replaced SAT-backed <code>bv_decide</code>, so no
+compiled-evaluation axiom is trusted. It proves the rewrite rules.</li>
+<li><strong><code>opt_norm</code>, <code>opt_eval_head</code>,
+<code>opt_match_head</code>, <code>kbv_amt</code></strong>: evaluation
+tactics for ISLE rules. They cut individual proofs from over an hour to
+minutes; the largest measured cut is 6,575 s to 290 s.</li>
+<li><strong>Symbolic stepping of Arm code</strong> (<code>sym_n</code>),
+from LNSym.</li>
+<li><strong>Generated data checked by the kernel:</strong> facts about
+the ISLE rule tables are decided per chunk with
+<code>decide +kernel</code>, from untrusted generators.
+<code>@[csimp]</code> lemmas swap in fast implementations for
+execution.</li>
+</ul>
+<h3 id="bottlenecks">Bottlenecks</h3>
+<table>
+<colgroup>
+<col style="width: 27%" />
+<col style="width: 36%" />
+<col style="width: 36%" />
+</colgroup>
+<thead>
+<tr>
+<th>Module family</th>
+<th style="text-align: right;">Modules</th>
+<th style="text-align: right;">Recorded build time</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Kernel-checked ISLE tables (<code>Isel*Tab*</code>)</td>
+<td style="text-align: right;">590</td>
+<td style="text-align: right;">13.3 h</td>
+</tr>
+<tr>
+<td>Stock lowering families</td>
+<td style="text-align: right;">1,677</td>
+<td style="text-align: right;">8.9 h</td>
+</tr>
+<tr>
+<td>Other backend proofs</td>
+<td style="text-align: right;">629</td>
+<td style="text-align: right;">2.9 h</td>
+</tr>
+<tr>
+<td>Mid-end rule proofs</td>
+<td style="text-align: right;">137</td>
+<td style="text-align: right;">2.9 h</td>
+</tr>
+<tr>
+<td>End-to-end and everything else</td>
+<td style="text-align: right;">~1,760</td>
+<td style="text-align: right;">1.1 h</td>
+</tr>
+<tr>
+<td><strong>Total</strong> (single-module times, 2 threads, 31 Oct)</td>
+<td style="text-align: right;"><strong>4,797</strong></td>
+<td style="text-align: right;"><strong>29.2 h</strong></td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>Kernel-checked tables dominate.</strong> The three slowest
+modules (<code>IselPrgTab*</code>) take 35–45 minutes each.</li>
+<li><strong>The base modules fan out to nearly everything.</strong>
+Changing <code>Backend/Isel.lean</code>, <code>Clif/Syntax.lean</code>
+or the Arm model rebuilds about 4,900 modules: 12–16 hours locally, or
+several hours in CI.</li>
+<li><strong>Memory:</strong> peaks of up to 14 GB per module (one module
+reached 23.6 GB before a fix).</li>
+<li><strong>The cache does not always hit.</strong> Lean’s output is not
+fully reproducible, so local caches often miss CI’s builds.</li>
+<li><strong>The proofs are about six times the size of the Cranelift
+code they mirror.</strong> Almost a third of the lines and build time
+are spent on the Stock families, which a more general proof could
+replace.</li>
+</ul>
+<h2 id="where-collaboration-could-help">9. Where collaboration could
+help</h2>
+<ul>
+<li><strong>Build performance.</strong> Restructure the kernel-checked
+tables. Cut the fan-out of the base modules. Make builds reproducible so
+the shared cache hits.</li>
+<li><strong>Proof economy.</strong> Replace the per-pattern Stock
+families with general theorems.</li>
+<li><strong>The remaining scope:</strong> SIMD (the largest gap in the
+test suite), floats, and tail calls.</li>
+<li><strong>The trusted base.</strong> An independent formalisation of
+AAPCS64 to prove the ABI statement against, and memory faults in the Arm
+model.</li>
+</ul>
+<hr />
+<p><em>Sources and measurements.</em></p>
+<ul>
+<li>Line counts: <code>tokei</code> 15 on Wasmtime 49.0.1
+(<code>cranelift/</code>, excluding test directories and
+<code>isle/veri</code>), LLVM <code>llvmorg-22.1.8</code>
+(<code>llvm/lib</code>, <code>llvm/include</code>; TableGen counted
+separately as non-comment lines), and <code>rust-lang/rust</code>
+<code>compiler/</code> at <code>5f4effd</code>.</li>
+<li>Lean figures: clifv main <code>d1c9c47e6</code>.</li>
+<li>Build times: <code>scripts/lake-module-peaks.tsv</code>.</li>
+<li>Agreement numbers: the CI stock comparison on pull request #1054
+(13–15 November 2026).</li>
+<li>Theorem names and statements: <code>FV/E2E/Statement.lean</code>,
+<code>FV/E2E/Final.lean</code>, <code>docs/TO-PROVE.md</code>,
+<code>docs/ARCHITECTURE.md</code>.</li>
+</ul>
+</body>
+</html>

@@ -14,11 +14,21 @@ style: |
 
 <!-- _class: lead -->
 
+<script src="assets/theme-bg-light.js"></script>
+<script src="assets/sparkles-light.js"></script>
+<script type="module" src="assets/mermaid-zkevm-light.js"></script>
+
 # Why evm-sail?
 
 Cody Gunton · 18 November 2026
 
 Draft
+
+https://codygunton.github.io/talks-and-writing/2026-11-18-why-evm-sail/
+
+<img src="assets/qr.png" alt="QR code to slides" style="width:140px;border-radius:0;">
+
+<div class="bottom-bar"><img src="assets/logo-zkevm-light.svg" class="logo" alt=""></div>
 
 ---
 

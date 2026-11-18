@@ -34,16 +34,15 @@ https://codygunton.github.io/talks-and-writing/2026-11-18-why-evm-sail/
 
 # Why evm-sail?
 
-My goal: one canonical EVM specification with broad ownership.
+My dream:
 
-It must support:
+  - One canonical EVM specification with broad, collective ownership.
 
+It should work for:
 - Verification that EVM implementations comply with the specification.
 - Differential testing.
-- Resolution of ambiguities during client development.
+- Client dev collaboration.
 - Smart contract verification.
-
-**A big tent: shared maintenance, shared tools, broad ownership.**
 
 ---
 
@@ -54,37 +53,21 @@ My anti-goals:
 - A patchwork of specifications connected by equivalence theorems.
   - Who maintains those theorems as Ethereum changes?
   - Which specification defines correct behavior?
-  - Separate ecosystems divide investment in tools and expertise.
-- A specification tied to one proving framework.
-- Experimentation without a maintained specification as its outcome.
-
-<!-- Equivalence theorems remain useful for derived views and implementations. The objection concerns competing canonical specifications. -->
+- Lock-in to Lean or any other tool.
+- A bunch of little experiments.
 
 ---
 
 # Why Sail? Existing use and maintenance
 
-- RISC-V selected the Sail model after its 2019 public review.
-- Sail also supports Arm and CHERI architecture models.
-- The RISC-V repository history starts in January 2018.
-- The fetched history contains 2,167 commits and 122 author identities.
-- Existing outputs include executable models and definitions for multiple provers.
-
-Author identities include duplicates and automation.
-
-<!-- Sources: https://github.com/riscvarchive/ISA_Formal_Spec_Public_Review ; https://alasdair.github.io/manual.html ; local riscv/sail-riscv origin/master a2ad4b56, counted 17 November 2026. These are model-repository counts, not counts for the Sail compiler. -->
-
----
-
-# Why Sail? A language for ISA specifications
-
-Sail supplies language features for instruction-set architecture specifications.
-
-- **Minimal abstractions:** registers, bitvectors, numeric constraints, and instruction mappings.
-- **Extractability:** restricted programs and explicit effects support translation into prover definitions.
-- **Extraction backends:** existing paths to executable code, Lean, Rocq, Isabelle, and HOL4.
-
-One source can support several communities of users.
+- Maturity:
+  - Developed since 2013; 122 Github contributors
+  - Used for RISC-V specification since 2019
+- Maintenance: clear maintainer [Alasdair Armstrong](https://github.com/Alasdair)
+- Flexibility: Sail is a language, not a library.
+  - Minimal abstractions: registers, bitvectors, numeric constraints, and mappings.
+  - Extractability: restricted programs and explicit effects support fv
+  - Many backends: can extract to C, Lean, Rocq, Isabelle, HOL4, SystemVerilog
 
 <!-- Sources: https://alasdair.github.io/manual.html ; https://www.cl.cam.ac.uk/users/pes20/sail/sail-popl2019.pdf . Backends differ in supported features and required host definitions. Extraction does not establish translator correctness. -->
 

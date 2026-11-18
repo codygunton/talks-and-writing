@@ -60,6 +60,7 @@ jobs:
             "2026-09-21-zisk-fv-handoff"
             "2026-10-14-zkevm-breakout"
             "2026-11-05-devcon"
+            "2026-11-18-why-evm-sail"
           )
 
           # Find the commit of the last successful deploy (from cache key)
@@ -123,6 +124,7 @@ jobs:
               <li><a href="2026-09-21-zisk-fv-handoff/">ZisK-FV Handoff (Sep 2026)</a></li>
               <li><a href="2026-10-14-zkevm-breakout/">zkEVM Breakout (Oct 2026)</a></li>
               <li><a href="2026-11-05-devcon/">Devcon: Towards Formally Verified zkEVMs (Nov 2026)</a></li>
+              <li><a href="2026-11-18-why-evm-sail/">Why evm-sail? (Nov 2026)</a></li>
             </ul>
           </body>
           </html>
